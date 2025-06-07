@@ -1,12 +1,18 @@
+"use client";
+
+import { useActionState } from "react";
 import {
   IdentificationIcon,
   AtSymbolIcon,
   PhoneIcon,
   ChatBubbleBottomCenterTextIcon,
 } from "@heroicons/react/24/outline";
+import { createContactMessage } from "@/app/lib/actions/contact";
 
-// contact us page
 export default function Page() {
+  const initialState = { message: null, errors: {} };
+  const [state, formAction] = useActionState(createContactMessage, initialState);
+
   return (
     <div className="bg-darkBrown py-10 px-4">
       <div className="mx-auto max-w-[40rem]">
@@ -15,7 +21,7 @@ export default function Page() {
           Kami akan menghubungi Anda secepat mungkin
         </p>
 
-        <form className="pt-6 grid grid-cols-6 gap-x-6 gap-y-8">
+        <form action={formAction} className="pt-6 grid grid-cols-6 gap-x-6 gap-y-8">
           {/* Nama */}
           <div className="col-span-3">
             <label htmlFor="name" className="mb-2 block text-sm font-medium text-beige">
@@ -32,6 +38,7 @@ export default function Page() {
               />
               <IdentificationIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-darkBrown/70 peer-focus:text-darkBrown" />
             </div>
+            {state.errors?.name && <p className="mt-2 text-sm text-red-400">{state.errors.name[0]}</p>}
           </div>
 
           {/* Nomor Telepon */}
@@ -68,6 +75,7 @@ export default function Page() {
               />
               <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-darkBrown/70 peer-focus:text-darkBrown" />
             </div>
+            {state.errors?.email && <p className="mt-2 text-sm text-red-400">{state.errors.email[0]}</p>}
           </div>
 
           {/* Pesan */}
@@ -86,6 +94,7 @@ export default function Page() {
               />
               <ChatBubbleBottomCenterTextIcon className="pointer-events-none absolute left-3 top-5 h-[18px] w-[18px] -translate-y-1/2 text-darkBrown/70 peer-focus:text-darkBrown" />
             </div>
+            {state.errors?.message && <p className="mt-2 text-sm text-red-400">{state.errors.message[0]}</p>}
           </div>
 
           {/* Tombol Submit */}
@@ -97,6 +106,9 @@ export default function Page() {
               Kirim
             </button>
           </div>
+          
+          {/* Tampilkan pesan sukses atau error */}
+          {state.message && <p className="mt-4 col-span-full text-sm text-green-400">{state.message}</p>}
         </form>
       </div>
     </div>

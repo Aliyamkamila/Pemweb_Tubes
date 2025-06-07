@@ -10,7 +10,7 @@ import PetCard from "@/app/ui/publicpages/pet-card";
 import CategoryList from "@/app/ui/publicpages/category-list";
 
 export default async function Page({ searchParams }) {
-  const { page = "1", category = "", query = "" } = await searchParams;
+  const { page = "1", category = "", query = "" } = searchParams;
   const speciesName = category;
   const currentPage = Number(page);
 
@@ -27,12 +27,12 @@ export default async function Page({ searchParams }) {
     <div className="p-6 sm:p-10 bg-beige min-h-screen text-darkBrown font-sans">
       {/* Heading */}
       <div className="mb-6">
-        <h1 className="text-3xl sm:text-4xl font-serif text-warmPeach">
+        <h1 className="text-3xl sm:text-4xl font-serif text-darkBrown">
           Daftar Hewan
         </h1>
-        <p className="text-sm text-beige">Saat ini tersedia untuk diadopsi</p>
+        <p className="text-sm text-darkBrown/80">Saat ini tersedia untuk diadopsi</p>
       </div>
-     
+
       {/* Search & Category */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         {/* search bar */}
