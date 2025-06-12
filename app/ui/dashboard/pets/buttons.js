@@ -1,50 +1,43 @@
-"use client";
+"use client"; // <--- TAMBAHKAN BARIS INI
 
-import { TrashIcon } from "@heroicons/react/24/outline";
-import { updateContactStatus, deleteContactMessage } from "@/app/lib/actions/contact";
+import { deletePet } from '@/app/lib/actions/pet';
+import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
+import { useFormState } from 'react-dom';
+import { useState } from 'react';
 
-/**
- * Komponen dropdown untuk mengubah status pesan kontak.
- * Menerima objek 'message' yang berisi id dan status saat ini.
- */
-export function UpdateStatus({ message }) {
-  // Fungsi ini akan dipanggil setiap kali nilai dropdown berubah.
-  const handleStatusChange = async (event) => {
-    const newStatus = event.target.value;
-    // Memanggil server action untuk memperbarui status di database.
-    await updateContactStatus(message.id, newStatus);
-  };
-
+export function CreatePet() {
   return (
-    <select
-      defaultValue={message.status}
-      onChange={handleStatusChange}
-      className={`rounded-full px-2 py-1 text-xs border cursor-pointer ${
-        message.status === 'Sudah dihubungi'
-          ? 'bg-green-200 text-green-700 border-green-300 hover:bg-green-300'
-          : 'bg-yellow-200 text-yellow-800 border-yellow-300 hover:bg-yellow-300'
-      }`}
+    <Link
+      href="/dashboard/pets/create"
+      className="flex h-10 items-center rounded-lg bg-teal-600 px-4 text-sm font-medium text-white transition-colors hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
     >
-      <option value="Belum dihubungi">Belum dihubungi</option>
-      <option value="Sudah dihubungi">Sudah dihubungi</option>
-    </select>
+      <span className="hidden md:block">Tambah Hewan</span>{' '}
+      <PlusIcon className="h-5 md:ml-4" />
+    </Link>
   );
 }
 
-/**
- * Komponen tombol untuk menghapus pesan kontak.
- * Menerima 'id' dari pesan yang akan dihapus.
- */
-export function DeleteMessage({ id }) {
-    // Mengikat 'id' ke dalam fungsi server action `deleteContactMessage`.
-    const deleteMessageWithId = deleteContactMessage.bind(null, id);
+export function UpdatePet({ id }) {
+  return (
+    <Link
+      href={`/dashboard/pets/${id}/edit`}
+      className="rounded-md border p-2 hover:bg-gray-100"
+    >
+      <PencilIcon className="w-5" />
+    </Link>
+  );
+}
 
-    return (
-        <form action={deleteMessageWithId}>
-            <button className="rounded-md border p-2 hover:bg-gray-100">
-                <span className="sr-only">Delete</span>
-                <TrashIcon className="w-5" />
-            </button>
-        </form>
-    );
+export function DeletePet({ id, name }) {
+  const deletePetWithId = deletePet.bind(null, id);
+
+  return (
+    <form action={deletePetWithId}>
+      <button className="rounded-md border p-2 hover:bg-gray-100">
+        <span className="sr-only">Delete</span>
+        <TrashIcon className="w-5" />
+      </button>
+    </form>
+  );
 }

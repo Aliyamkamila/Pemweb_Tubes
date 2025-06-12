@@ -1,12 +1,8 @@
-import NextAuth from 'next-auth';
-import { authProviderConfigList } from './auth.config';
+import { auth } from './auth'; // <-- Impor dari auth.js utama
 
-const { auth } = NextAuth(authProviderConfigList);
-export default auth(function middleware(req) {
-  // custom middleware logic goes here
-});
+export default auth;
 
-// Filter Middleware to avoid API routes and static assets
+// Filter Middleware untuk menentukan rute mana yang dilindunginya.
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 };
