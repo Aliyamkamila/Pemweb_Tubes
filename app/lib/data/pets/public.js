@@ -1,7 +1,7 @@
 import prisma from "@/app/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/app/lib/constants";
 import { z } from "zod";
-import { auth } from "@/auth";
+// import { auth } from "@/auth"; // Sudah tidak diperlukan di file ini
 import { idSchema } from "../../schemas/common";
 
 const fetchPublishedPetsPagesWithCategorySchema = z.object({
@@ -18,21 +18,23 @@ const fetchFilteredPublishedPetsWithCategorySchema = z.object({
 export async function fetchFilteredPublishedPetsWithCategory(
   query,
   currentPage,
-  speciesName
+  speciesName,
 ) {
   const parsedData = fetchFilteredPublishedPetsWithCategorySchema.safeParse({
     parsedQuery: query,
     parsedCurrentPage: currentPage,
     parsedSpeciesName: speciesName,
   });
+
   if (!parsedData.success) {
     throw new Error("Tipe tidak valid.");
   }
+
   const { parsedQuery, parsedCurrentPage, parsedSpeciesName } = parsedData.data;
   const offset = (parsedCurrentPage - 1) * ITEMS_PER_PAGE;
 
-  const session = await auth();
-  const userId = session?.user?.id;
+  // const session = await auth(); // Dihapus
+  // const userId = session?.user?.id; // Dihapus
 
   try {
     const pets = await prisma.pet.findMany({
@@ -59,27 +61,17 @@ export async function fetchFilteredPublishedPetsWithCategory(
           },
           take: 1,
         },
-        ...(userId && {
-          likes: {
-            select: {
-              userId: true,
-            },
-            where: {
-              userId: userId,
-            },
-            take: 1,
-          },
-        }),
+        // Bagian 'likes' sudah sepenuhnya dihapus dari sini
       },
       orderBy: {
         createdAt: "desc",
       },
       take: ITEMS_PER_PAGE,
-      skip: offset, // Perbaikan ada di sini
+      skip: offset,
     });
     return pets;
   } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       console.error("Error fetching pets.", error);
     }
     throw new Error("Terjadi kesalahan saat mengambil data hewan.");
@@ -88,7 +80,7 @@ export async function fetchFilteredPublishedPetsWithCategory(
 
 export async function fetchPublishedPetsPagesWithCategory(
   query,
-  speciesName
+  speciesName,
 ) {
   const parsedData = fetchPublishedPetsPagesWithCategorySchema.safeParse({
     parsedQuery: query,
@@ -117,7 +109,7 @@ export async function fetchPublishedPetsPagesWithCategory(
     const totalPages = Math.ceil(Number(count) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       console.error("Error fetching pets pages.", error);
     }
     throw new Error("Terjadi kesalahan saat mengambil halaman hewan.");
@@ -129,7 +121,7 @@ export async function fetchSpecies() {
     const species = await prisma.species.findMany();
     return species;
   } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       console.error("Error fetching species.", error);
     }
     throw new Error("Terjadi kesalahan saat mengambil spesies.");
@@ -166,7 +158,7 @@ export async function fetchFrontPagePetById(id) {
     });
     return pet;
   } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       console.error("Error fetching pet.", error);
     }
     throw new Error("Terjadi kesalahan saat mengambil data hewan.");

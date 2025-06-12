@@ -11,9 +11,9 @@ export default async function Page() {
     <main>
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Hewan", href: "/dashboard/pets" },
+          { label: "Manajemen Hewan", href: "/dashboard/pets" },
           {
-            label: "Tambah Hewan",
+            label: "Tambah Data Hewan Baru",
             href: "/dashboard/pets/create",
             active: true,
           },

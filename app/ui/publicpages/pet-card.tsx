@@ -1,12 +1,19 @@
-import { createPetLike, deletePetLike } from "@/app/lib/actions/pet";
 import { fetchFilteredPublishedPetsWithCategory } from "@/app/lib/data/pets/public";
-import { auth } from "@/auth";
-import { HeartIcon } from "@heroicons/react/24/outline";
 import { PhotoIcon } from "@heroicons/react/24/outline";
-import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
 import { shimmer, toBase64 } from "@/app/lib/utils/image-loading-placeholder";
+
+// 1. Definisikan tipe untuk objek 'pet'
+type Pet = {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  petImages: {
+    url: string;
+  }[];
+};
 
 export default async function PetCard({
   query,
@@ -17,79 +24,44 @@ export default async function PetCard({
   currentPage: number;
   speciesName: string;
 }) {
-  // user session
-  const session = await auth();
-
-  // fetch pets
   const pets = await fetchFilteredPublishedPetsWithCategory(
     query,
     currentPage,
-    speciesName
+    speciesName,
   );
+
   return (
     <div className="mt-6 flex gap-3 flex-wrap">
-      {pets?.map((pet) => (
+      {/* 2. Terapkan tipe 'Pet' pada parameter 'pet' */}
+      {pets?.map((pet: Pet) => (
         <div
           key={pet.id}
-          className="bg-white relative border border-gray-200 p-4 shadow-md rounded-md w-40 flex flex-col items-center justify-center"
+          className="bg-white relative border border-gray-200 p-4 shadow-sm rounded-md w-40 flex flex-col items-center justify-center transition-shadow duration-300 hover:shadow-md"
         >
-          {session && session.user.id ? (
-            <form
-              action={async () => {
-                "use server";
-                if (pet.likes && pet.likes.length > 0) {
-                  await deletePetLike(pet.id, session.user.id);
-                } else {
-                  await createPetLike(pet.id, session.user.id);
-                }
-              }}
-            >
-              <button type="submit" className="absolute top-2 right-2">
-                <HeartIcon
-                  className={clsx(
-                    "h-6 w-6 text-red-300",
-                    pet.likes &&
-                      pet.likes.length > 0 &&
-                      "fill-red-300 text-red-300"
-                  )}
-                />
-              </button>
-            </form>
-          ) : (
-            <button type="submit" className="absolute top-2 right-2">
-              <HeartIcon
-                className={clsx(
-                  "h-6 w-6 text-red-300",
-                  pet.likes &&
-                    pet.likes.length > 0 &&
-                    "fill-red-300 text-red-300"
-                )}
-              />
-            </button>
-          )}
-
-          <Link href={`/pets/${pet.id}`}>
+          <Link href={`/pets/${pet.id}`} className="block">
             <div className="w-full">
-              {pet.petImages.length > 0 ? (
+              {pet.petImages && pet.petImages.length > 0 ? (
                 <Image
                   src={pet.petImages[0].url}
-                  alt="Pet"
+                  alt={`Foto ${pet.name}`}
                   width={300}
                   height={300}
                   placeholder={`data:image/svg+xml;base64,${toBase64(
-                    shimmer(300, 300)
+                    shimmer(300, 300),
                   )}`}
                   className="rounded-md w-28 h-28 object-cover"
                 />
               ) : (
-                <div className="w-28 h-28 bg-gray-200 rounded-md flex">
-                  <PhotoIcon className="w-8 h-8 m-auto text-gray-500" />
+                <div className="w-28 h-28 bg-gray-200 rounded-md flex items-center justify-center">
+                  <PhotoIcon className="w-8 h-8 text-gray-400" />
                 </div>
               )}
-              <p className="font-medium w-28 overflow-hidden truncate">
-                {pet.name}
-              </p>
-              <h2 className="text-sm text-gray-600">{`${pet.city}, ${pet.state}`}</h2>
+              <div className="mt-2 text-center">
+                <p className="font-medium w-28 overflow-hidden truncate text-darkBrown">
+                  {pet.name}
+                </p>
+                <h2 className="text-sm text-gray-600">{`${pet.city}, ${pet.state}`}</h2>
+              </div>
             </div>
           </Link>
         </div>

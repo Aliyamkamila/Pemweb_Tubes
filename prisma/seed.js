@@ -1,4 +1,5 @@
-const bcrypt = require("bcrypt");
+// bcrypt tidak lagi diperlukan karena fungsi seedUsers dihapus
+// const bcrypt = require("bcrypt"); 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
@@ -27,6 +28,21 @@ const species = [
     id: "bb48b4bb-ee0d-464a-a1ad-0479bead3812",
     name: "Other",
   },
+];
+
+const adoptionStatus = [
+    {
+      id: "2609d1ce-f62b-42e3-a649-0129ace0152b",
+      name: "Adopted",
+    },
+    {
+      id: "640566d8-2619-4764-8660-61a39baf075e",
+      name: "Available",
+    },
+    {
+      id: "09fe1188-741e-4a97-a9ad-0cfd094ee247",
+      name: "Pending",
+    },
 ];
 
 const petData = [
@@ -287,21 +303,6 @@ const petData = [
   },
 ];
 
-const adoptionStatus = [
-  {
-    id: "2609d1ce-f62b-42e3-a649-0129ace0152b",
-    name: "Adopted",
-  },
-  {
-    id: "640566d8-2619-4764-8660-61a39baf075e",
-    name: "Available",
-  },
-  {
-    id: "09fe1188-741e-4a97-a9ad-0cfd094ee247",
-    name: "Pending",
-  },
-];
-
 async function seedSpecies() {
   console.log("Seeding species ...");
   try {
@@ -332,25 +333,6 @@ async function seedAdoptionStatus() {
   console.log("Seeded adoption status");
 }
 
-async function seedUsers() {
-  console.log("Seeding users ...");
-  try {
-    const hashedPassword = await bcrypt.hash("admin123", 10);
-    await prisma.user.create({
-      data: {
-        name: "admin",
-        password: hashedPassword,
-        email: "admin@example.com",
-        role: "admin",
-      },
-    });
-  } catch (error) {
-    console.error("Error seeding users:", error);
-    throw error;
-  }
-  console.log("Seeded users");
-}
-
 async function seedPets() {
   console.log("Seeding pets ...");
   for (const pet of petData) {
@@ -367,19 +349,23 @@ async function seedPets() {
 }
 
 async function main() {
-  // Clear existing data
+  // Urutan penghapusan penting untuk menghindari error relasi.
+  // Hapus model 'anak' (yang memiliki foreign key) sebelum model 'induk'.
   console.log("Deleting existing data ...");
-  await prisma.petImage.deleteMany();
-  await prisma.pet.deleteMany();
-  await prisma.adoptionStatus.deleteMany();
-  await prisma.species.deleteMany();
-  await prisma.user.deleteMany();
+  await prisma.contactMessage.deleteMany(); // Tidak punya relasi, bisa dihapus kapan saja
+  await prisma.petImage.deleteMany();       // Anak dari Pet
+  await prisma.pet.deleteMany();            // Anak dari Species dan AdoptionStatus
+  await prisma.adoptionStatus.deleteMany(); // Induk
+  await prisma.species.deleteMany();        // Induk
+
+  // Fungsi yang berhubungan dengan User sudah dihapus
+  // await prisma.user.deleteMany();
 
   // Seed data
   console.log("Start seeding ...");
   await seedSpecies();
   await seedAdoptionStatus();
-  await seedUsers();
+  // await seedUsers(); // Panggilan fungsi ini juga dihapus
   await seedPets();
   console.log("Seeding finished.");
 }

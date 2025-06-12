@@ -48,7 +48,8 @@ function WelcomeSection() {
         </p>
         <Link
           href="/pets"
-          className="inline-block bg-warmPeach text-darkBrown font-semibold py-2 px-6 rounded-full shadow hover:bg-opacity-90 transition"
+          // --- PERUBAHAN DI SINI ---
+          className="inline-block bg-beige text-darkBrown font-semibold py-2 px-6 rounded-full shadow hover:bg-opacity-80 transition"
         >
           Cari Sahabat
         </Link>

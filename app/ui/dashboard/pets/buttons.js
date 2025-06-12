@@ -1,68 +1,50 @@
 "use client";
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
-import { deletePetImage } from "@/app/lib/actions/pet";
-import { useState } from "react";
 
-export function CreatePet() {
+import { TrashIcon } from "@heroicons/react/24/outline";
+import { updateContactStatus, deleteContactMessage } from "@/app/lib/actions/contact";
+
+/**
+ * Komponen dropdown untuk mengubah status pesan kontak.
+ * Menerima objek 'message' yang berisi id dan status saat ini.
+ */
+export function UpdateStatus({ message }) {
+  // Fungsi ini akan dipanggil setiap kali nilai dropdown berubah.
+  const handleStatusChange = async (event) => {
+    const newStatus = event.target.value;
+    // Memanggil server action untuk memperbarui status di database.
+    await updateContactStatus(message.id, newStatus);
+  };
+
   return (
-    <Link
-      href="/dashboard/pets/create"
-      className="flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+    <select
+      defaultValue={message.status}
+      onChange={handleStatusChange}
+      className={`rounded-full px-2 py-1 text-xs border cursor-pointer ${
+        message.status === 'Sudah dihubungi'
+          ? 'bg-green-200 text-green-700 border-green-300 hover:bg-green-300'
+          : 'bg-yellow-200 text-yellow-800 border-yellow-300 hover:bg-yellow-300'
+      }`}
     >
-      <span className="hidden md:block">New Pet</span>{" "}
-      <PlusIcon className="h-5 md:ml-4" />
-    </Link>
+      <option value="Belum dihubungi">Belum dihubungi</option>
+      <option value="Sudah dihubungi">Sudah dihubungi</option>
+    </select>
   );
 }
 
-export function UpdatePet({ id }) {
-  return (
-    <Link
-      href={`/dashboard/pets/${id}/edit`}
-      className="rounded-md border p-2 hover:bg-gray-100"
-    >
-      <PencilIcon className="w-5" />
-    </Link>
-  );
-}
+/**
+ * Komponen tombol untuk menghapus pesan kontak.
+ * Menerima 'id' dari pesan yang akan dihapus.
+ */
+export function DeleteMessage({ id }) {
+    // Mengikat 'id' ke dalam fungsi server action `deleteContactMessage`.
+    const deleteMessageWithId = deleteContactMessage.bind(null, id);
 
-export function DeletePetImage({ id }) {
-  const deleteImageWithId = deletePetImage.bind(null, id);
-  // Confirmation state for the delete button
-  const [confirmation, setConfirmation] = useState(false);
-  const handleClick = () => setConfirmation(!confirmation);
-  return (
-    <form action={deleteImageWithId}>
-      <div className="mt-1 h-8 text-center text-sm rounded border hover:bg-red-500 hover:text-white hover:cursor-pointer flex items-center justify-center">
-        {!confirmation ? (
-          <div
-            onClick={handleClick}
-            className="w-full flex items-center justify-center"
-          >
-            <span className="sr-only">Delete</span>
-            <TrashIcon className="w-4" />
-          </div>
-        ) : (
-          <button className="flex items-center justify-center w-full">
-            <span className="sr-only">Delete</span>
-            <span>Yes</span>
-          </button>
-        )}
-      </div>
-    </form>
-  );
-}
-
-export function DeletePet({ id }) {
-  return (
-    <Link
-      href={`/dashboard/pets/delete/${id}`}
-      scroll={false}
-      className="rounded-md border p-2 hover:bg-gray-100"
-    >
-      <span className="sr-only">Delete</span>
-      <TrashIcon className="w-5" />
-    </Link>
-  );
+    return (
+        <form action={deleteMessageWithId}>
+            <button className="rounded-md border p-2 hover:bg-gray-100">
+                <span className="sr-only">Delete</span>
+                <TrashIcon className="w-5" />
+            </button>
+        </form>
+    );
 }

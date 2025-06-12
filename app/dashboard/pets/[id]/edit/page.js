@@ -10,7 +10,7 @@ import { shimmer, toBase64 } from "@/app/lib/utils/image-loading-placeholder";
 
 export default async function Page({ params }) {
     // get id from the url
-    const { id } = await params;
+    const { id } = params; // Perbaikan: Menghapus 'await'
 
     // fetch pet from database
     const pet = await fetchPetById(id);
