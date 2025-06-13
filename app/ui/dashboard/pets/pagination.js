@@ -6,33 +6,28 @@ import Link from 'next/link';
 import { generatePagination } from '@/app/lib/utils/pagination';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-export default function Pagination(props) {
-  const { totalPages } = props;
+export default function Pagination({ totalPages }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
 
-  // Create a new URLSearchParams object from the current search params.
   const createPageURL = (pageNumber) => {
     const params = new URLSearchParams(searchParams);
     params.set('page', pageNumber.toString());
     return `${pathname}?${params.toString()}`;
   };
 
-  // Generate the array of pages to display in the pagination.
   const pagesArray = generatePagination(currentPage, totalPages);
 
   return (
     <>
       <div className="inline-flex">
-        {/* arrow on the left side */}
         <PaginationArrow
           direction="left"
           href={createPageURL(currentPage - 1)}
           isDisabled={currentPage <= 1}
         />
 
-        {/* pagination numbers */}
         <div className="flex -space-x-px">
           {pagesArray.map((page, index) => {
             let position;
@@ -54,7 +49,6 @@ export default function Pagination(props) {
           })}
         </div>
 
-        {/* arrow on the right side */}
         <PaginationArrow
           direction="right"
           href={createPageURL(currentPage + 1)}
@@ -65,34 +59,30 @@ export default function Pagination(props) {
   );
 }
 
-// Number component for pagination.
-function PaginationNumber(props) {
-  const { page, href, isActive, position } = props;
+function PaginationNumber({ page, href, isActive, position }) {
+  // --- PERUBAHAN WARNA ADA DI BARIS INI ---
   const className = clsx(
     'flex h-10 w-10 items-center justify-center text-sm border',
     {
       'rounded-l-md': position === 'first' || position === 'single',
       'rounded-r-md': position === 'last' || position === 'single',
-      'z-10 bg-blue-600 border-blue-600 text-white': isActive,
+      // Mengganti 'bg-blue-600' menjadi 'bg-darkBrown text-beige'
+      'z-10 bg-darkBrown border-darkBrown text-beige': isActive,
       'hover:bg-gray-100': !isActive && position !== 'middle',
       'text-gray-300': position === 'middle',
     },
   );
 
-  // If the page is active or in the middle, don't make it a link.
   return isActive || position === 'middle' ? (
     <div className={className}>{page}</div>
   ) : (
-    // Otherwise, make it a link.
     <Link href={href} className={className}>
       {page}
     </Link>
   );
 }
 
-// Arrow component for pagination.
-function PaginationArrow(props) {
-  const { href, direction, isDisabled } = props;
+function PaginationArrow({ href, direction, isDisabled }) {
   const className = clsx(
     'flex h-10 w-10 items-center justify-center rounded-md border',
     {

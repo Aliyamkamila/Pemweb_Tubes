@@ -1,3 +1,2 @@
-import { handlers } from '@/auth'; // Pastikan path alias '@/' menunjuk ke root proyek
-
+import { handlers } from "@/auth";
 export const { GET, POST } = handlers;

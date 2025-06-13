@@ -1,30 +1,35 @@
-"use client"; // Menandai file ini sebagai Client Component
+'use client';
 
-import { lusitana } from '@/app/ui/fonts';
+import { lusitana } from '../ui/fonts';
 import {
   AtSymbolIcon,
   KeyIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
-import { Button } from '@/app/ui/button';
-import { useFormState, useFormStatus } from 'react-dom';
+import { Button } from '../ui/button';
 import { authenticate } from '@/app/lib/actions/auth-actions';
 
+// --- PERUBAHAN UTAMA ADA DI SINI ---
+// Memisahkan impor hook ke sumber yang benar
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
+
+
 export default function LoginPage() {
-  const [errorMessage, dispatch] = useFormState(authenticate, undefined);
+  const [errorMessage, dispatch] = useActionState(authenticate, undefined);
 
   return (
-    <main className="flex items-center justify-center md:h-screen">
-      <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-32">
+    <main className="flex items-center justify-center min-h-screen bg-beige">
+      <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4">
         <div className="flex h-20 w-full items-end rounded-lg bg-darkBrown p-3 md:h-36">
-          <div className="w-full text-white">
-            <h1 className={`${lusitana.className} text-3xl`}>Cozy House Login</h1>
+          <div className="w-32 text-white md:w-36">
+            <h1 className="font-serif text-3xl">Admin Login</h1>
           </div>
         </div>
         <form action={dispatch} className="space-y-3">
           <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
-            <h1 className={`${lusitana.className} mb-3 text-2xl`}>
+            <h1 className="font-serif mb-3 text-2xl">
               Silakan login untuk melanjutkan.
             </h1>
             <div className="w-full">
@@ -90,9 +95,10 @@ export default function LoginPage() {
 
 function LoginButton() {
   const { pending } = useFormStatus();
+
   return (
     <Button className="mt-4 w-full" aria-disabled={pending}>
-      Login <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+      Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
     </Button>
   );
 }

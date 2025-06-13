@@ -1,70 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_URL")
+  url      = env("DATABASE_URL") // PERUBAHAN DI SINI
 }
 
+// Enum untuk role pengguna
+enum Role {
+  admin
+  employee
+}
+
+// Enum untuk status adopsi
+enum AdoptionStatusName {
+  Adopted
+  Available
+  Pending
+}
+
+// Model untuk Pengguna
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          Role      @default(employee)
+  accounts      Account[]
+  sessions      Session[]
+  likes         Like[]
+  adoptions     Adoption[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// Model untuk Akun (digunakan oleh NextAuth.js untuk OAuth)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// Model untuk Sesi (digunakan oleh NextAuth.js)
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Model untuk Token Verifikasi (digunakan oleh NextAuth.js untuk email)
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Model untuk Spesies Hewan
+model Species {
+  id   String @id @default(uuid())
+  name String @unique
+  pets Pet[]
+
+  @@map("species")
+}
+
+// Model untuk Status Adopsi
+model AdoptionStatus {
+  id   String             @id @default(uuid())
+  name AdoptionStatusName @unique
+  pets Pet[]
+
+  @@map("adoption_statuses")
+}
+
+// Model untuk Hewan Peliharaan
+model Pet {
+  id               String          @id @default(cuid())
+  name             String
+  age              Int
+  gender           String
+  breed            String
+  weight           Float
+  height           Float
+  city             String
+  state            String
+  description      String
+  published        Boolean         @default(false)
+  speciesId        String
+  adoptionStatusId String
+  petImages        PetImage[]
+  likes            Like[]
+  adoptions        Adoption[]
+  species          Species         @relation(fields: [speciesId], references: [id])
+  adoptionStatus   AdoptionStatus  @relation(fields: [adoptionStatusId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("pets")
+}
+
+// Model untuk Gambar Hewan
+model PetImage {
+  id    String @id @default(cuid())
+  url   String
+  petId String
+  pet   Pet    @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@map("pet_images")
+}
+
+// Model untuk Like
+model Like {
+  id     String @id @default(cuid())
+  userId String
+  petId  String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet    Pet    @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, petId])
+  @@map("likes")
+}
+
+// Model untuk Adopsi
+model Adoption {
+  id      String   @id @default(cuid())
+  userId  String
+  petId   String
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet     Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  notes   String?
+  status  String   @default("pending") // e.g., pending, approved, rejected
+  createdAt DateTime @default(now())
+
+  @@unique([userId, petId])
+  @@map("adoptions")
+}
+
+// Model untuk Pesan Kontak
 model ContactMessage {
   id        String   @id @default(cuid())
   name      String
   email     String
   phone     String?
   message   String
-  status    String   @default("Belum dihubungi")
+  status    String   @default("Belum dihubungi") // e.g., Belum dihubungi, Sudah dihubungi
   createdAt DateTime @default(now())
 
-  @@map(name: "contact_messages")
+  @@map("contact_messages")
 }
-
-model Pet {
-  id               String         @id @default(cuid())
-  name             String
-  age              Int
-  gender           String
-  speciesId        String
-  species          Species        @relation(fields: [speciesId], references: [id])
-  breed            String
-  weight           Int
-  height           Int
-  city             String
-  state            String
-  description      String
-  published        Boolean        @default(false)
-  adoptionStatusId String         @map(name: "adoption_status_id")
-  adoptionStatus   AdoptionStatus @relation(fields: [adoptionStatusId], references: [id])
-  petImages        PetImage[]
-  createdAt        DateTime       @default(now())
-  // likes Like[] <<-- BARIS INI DIHAPUS
-  
-  @@map(name: "pets")
-}
-
-model PetImage {
-  id    String @id @default(cuid())
-  url   String
-  petId String @map(name: "pet_id")
-  pet   Pet    @relation(fields: [petId], references: [id], onDelete: Cascade)
-
-  @@map(name: "pet_images")
-}
-
-model AdoptionStatus {
-  id   String @id @default(cuid())
-  name String @unique
-  Pet  Pet[]
-
-  @@map("adoption_status")
-}
-
-model Species {
-  id   String @id @default(cuid())
-  name String @unique
-  Pet  Pet[]
-
-  @@map(name: "species")
-}
-
-// Model Like, Account, dan User sudah dihapus dari sini.

@@ -1,6 +1,5 @@
-// bcrypt tidak lagi diperlukan karena fungsi seedUsers dihapus
-// const bcrypt = require("bcrypt"); 
-const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const species = [
@@ -303,6 +302,36 @@ const petData = [
   },
 ];
 
+async function seedUsers() {
+  console.log("Seeding users ...");
+  try {
+    const usersData = [
+      {
+        name: "Admin User",
+        email: "admin@example.com",
+        password: await bcrypt.hash("admin123", 10),
+        role: "admin",
+      },
+      {
+        name: "Employee User",
+        email: "employee@example.com",
+        password: await bcrypt.hash("password123", 10),
+        role: "employee",
+      },
+    ];
+
+    for (const u of usersData) {
+      await prisma.user.create({
+        data: u,
+      });
+    }
+    console.log("Seeded users");
+  } catch (error) {
+    console.error("Error seeding users:", error);
+    throw error;
+  }
+}
+
 async function seedSpecies() {
   console.log("Seeding species ...");
   try {
@@ -311,11 +340,11 @@ async function seedSpecies() {
         data: s,
       });
     }
+    console.log("Seeded species");
   } catch (error) {
     console.error("Error seeding species:", error);
     throw error;
   }
-  console.log("Seeded species");
 }
 
 async function seedAdoptionStatus() {
@@ -326,46 +355,40 @@ async function seedAdoptionStatus() {
         data: status,
       });
     }
+    console.log("Seeded adoption status");
   } catch (error) {
     console.error("Error seeding adoption status:", error);
     throw error;
   }
-  console.log("Seeded adoption status");
 }
 
 async function seedPets() {
   console.log("Seeding pets ...");
-  for (const pet of petData) {
-    try {
+  try {
+    for (const pet of petData) {
       await prisma.pet.create({
         data: pet,
       });
-    } catch (error) {
-      console.error("Error seeding pets:", error);
-      throw error;
     }
+    console.log("Seeded pets");
+  } catch (error) {
+    console.error("Error seeding pets:", error);
+    throw error;
   }
-  console.log("Seeded pets");
 }
 
 async function main() {
-  // Urutan penghapusan penting untuk menghindari error relasi.
-  // Hapus model 'anak' (yang memiliki foreign key) sebelum model 'induk'.
   console.log("Deleting existing data ...");
-  await prisma.contactMessage.deleteMany(); // Tidak punya relasi, bisa dihapus kapan saja
-  await prisma.petImage.deleteMany();       // Anak dari Pet
-  await prisma.pet.deleteMany();            // Anak dari Species dan AdoptionStatus
-  await prisma.adoptionStatus.deleteMany(); // Induk
-  await prisma.species.deleteMany();        // Induk
-
-  // Fungsi yang berhubungan dengan User sudah dihapus
-  // await prisma.user.deleteMany();
+  await prisma.contactMessage.deleteMany();
+  await prisma.petImage.deleteMany();
+  await prisma.pet.deleteMany();
+  await prisma.adoptionStatus.deleteMany();
+  await prisma.species.deleteMany();
 
   // Seed data
   console.log("Start seeding ...");
   await seedSpecies();
   await seedAdoptionStatus();
-  // await seedUsers(); // Panggilan fungsi ini juga dihapus
   await seedPets();
   console.log("Seeding finished.");
 }
