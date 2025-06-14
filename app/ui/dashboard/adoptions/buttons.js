@@ -1,11 +1,11 @@
-// app/ui/dashboard/adoptions/buttons.js
 "use client";
 
 import { PencilIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-// PASTIKAN import ini menggunakan useFormState
-import { useFormState, useEffect, useState } from "react"; // <--- Ini sudah benar: useFormState
+import { useEffect, useState } from "react";       // ✅ untuk state & effect
+import { useFormState } from "react-dom";          // ✅ khusus useFormState
 import { updateContactStatus, deleteContactMessage } from "@/app/lib/actions/contact";
+
 
 // Tombol untuk mengarahkan ke halaman edit
 export function EditMessage({ id }) {
