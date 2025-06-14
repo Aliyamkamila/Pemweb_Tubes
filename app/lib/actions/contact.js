@@ -1,119 +1,62 @@
+// app/lib/actions/contact.js
 "use server";
 
 import { z } from "zod";
-import prisma from "@/app/lib/prisma";
-import { revalidatePath, redirect } from "next/cache"; // Import diperbaiki
+import prisma from "@/app/lib/prisma"; // Pastikan Anda memiliki instance Prisma client
+import { revalidatePath } from "next/cache";
 
+// Definisikan schema untuk validasi input form kontak
 const ContactFormSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, { message: "Nama tidak boleh kosong." }),
+  name: z.string().min(3, { message: "Nama harus diisi minimal 3 karakter." }),
   email: z.string().email({ message: "Format email tidak valid." }),
-  phone: z.string().optional(),
-  message: z.string().min(1, { message: "Pesan tidak boleh kosong." }),
-  createdAt: z.string(),
+  phone: z.string().optional().nullable(), // Nomor telepon opsional dan bisa null
+  message: z.string().min(10, { message: "Pesan harus diisi minimal 10 karakter." }),
 });
 
-const CreateContactMessage = ContactFormSchema.omit({
-  id: true,
-  createdAt: true,
-});
-
-// Aksi untuk membuat pesan baru dari halaman kontak publik
 export async function createContactMessage(prevState, formData) {
-  const validatedFields = CreateContactMessage.safeParse({
+  const validatedFields = ContactFormSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     phone: formData.get("phone"),
     message: formData.get("message"),
   });
 
+  // Jika validasi gagal, kembalikan error
   if (!validatedFields.success) {
+    console.error("Validation Errors:", validatedFields.error.flatten().fieldErrors);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Gagal Mengirim Pesan. Harap periksa kembali isian Anda.",
+      message: "Gagal mengirim pesan. Harap periksa kembali isian Anda.", // Pesan error untuk toast
     };
   }
+
+  const { name, email, phone, message } = validatedFields.data;
 
   try {
     await prisma.contactMessage.create({
       data: {
-        name: validatedFields.data.name,
-        email: validatedFields.data.email,
-        phone: validatedFields.data.phone,
-        message: validatedFields.data.message,
+        name: name,
+        email: email,
+        phone: phone, // Akan menyimpan null jika tidak diisi
+        message: message,
+        status: "Belum dihubungi", // Atur status awal
       },
     });
-  } catch (error) {
+
+    // Revalidate cache untuk halaman adopsi (dashboard admin)
+    revalidatePath("/dashboard/adoptions");
+    revalidatePath("/dashboard/adoptions/page.js"); // Pastikan path ini benar jika berbeda
+
+    // Mengembalikan pesan sukses yang akan ditangkap oleh useEffect di komponen klien
     return {
-      message: "Database Error: Gagal Membuat Pesan Kontak.",
+      message: "Pesan berhasil dikirim successfully", // Kata kunci "successfully" penting untuk deteksi di useEffect
+      errors: {}, // Kosongkan errors karena sukses
     };
-  }
-
-  revalidatePath("/contact");
-  return {
-    message: "Pesan berhasil dikirim!",
-    errors: {},
-  };
-}
-
-// Aksi untuk mengubah status pesan dari tabel dasbor
-export async function updateContactStatus(prevState, formData) {
-  const id = formData.get("id");
-  const newStatus = formData.get("status");
-
-  try {
-    await prisma.contactMessage.update({
-      where: { id: id },
-      data: { status: newStatus },
-    });
-    revalidatePath("/dashboard/adoptions");
-    return { message: `Status berhasil diubah menjadi "${newStatus}".` };
   } catch (error) {
-    return { message: "Database Error: Gagal memperbarui status." };
-  }
-}
-
-// --- FUNGSI BARU UNTUK HALAMAN EDIT ---
-// Aksi untuk memperbarui seluruh data pesan dari halaman edit
-export async function updateContactMessage(id, prevState, formData) {
-    const validatedFields = CreateContactMessage.safeParse({
-      name: formData.get('name'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
-      message: formData.get('message'),
-    });
-
-    if (!validatedFields.success) {
-      return {
-        errors: validatedFields.error.flatten().fieldErrors,
-        message: 'Gagal Memperbarui Pesan. Harap periksa kembali isian Anda.',
-      };
-    }
-    
-    const { name, email, phone, message } = validatedFields.data;
-
-    try {
-      await prisma.contactMessage.update({
-        where: { id: id },
-        data: { name, email, phone, message },
-      });
-    } catch (error) {
-      return { message: 'Database Error: Gagal memperbarui pesan.' };
-    }
-
-    revalidatePath('/dashboard/adoptions');
-    redirect('/dashboard/adoptions');
-  }
-
-// Aksi untuk menghapus pesan
-export async function deleteContactMessage(id) {
-  try {
-    await prisma.contactMessage.delete({
-      where: { id },
-    });
-    revalidatePath("/dashboard/adoptions");
-    return { message: "Pesan berhasil dihapus." };
-  } catch (error) {
-    return { message: "Database Error: Gagal menghapus pesan." };
+    console.error("Database Error: Failed to create contact message", error);
+    return {
+      message: "Terjadi kesalahan server saat mengirim pesan. Silakan coba lagi nanti.", // Pesan error untuk toast
+      errors: {},
+    };
   }
 }

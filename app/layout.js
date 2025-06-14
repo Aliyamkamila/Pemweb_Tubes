@@ -1,5 +1,7 @@
-import "./globals.css";
-import { inter } from "./ui/fonts";
+// app/layout.js
+import './globals.css';
+import { Toaster } from 'sonner'; // Pastikan ini diimpor
+import { inter } from "./ui/fonts"; // Ganti dengan font yang Anda gunakan
 
 export const metadata = {
   title: "Penampungan Hewan",
@@ -9,7 +11,10 @@ export const metadata = {
 export default async function RootLayout({ children }) {
   return (
     <html lang="id">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}> {/* Pastikan className font diterapkan */}
+        {children}
+        <Toaster position="top-center" richColors /> {/* Ini SANGAT PENTING */}
+      </body>
     </html>
   );
 }
