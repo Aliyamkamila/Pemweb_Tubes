@@ -24,7 +24,7 @@ const links = [
   { name: "Pets", href: "/pets" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
-  { name: "Dashboard", href: "/dashboard" },
+  { name: "Dashboard", href: "/dashboard" }
 ];
 
 export default function TopNav({ userImage, showUserProfile }) {
@@ -85,6 +85,7 @@ export default function TopNav({ userImage, showUserProfile }) {
                       <button
                         className="rounded-md px-3 py-2 text-sm font-serif font-semibold text-beige hover:border-b-2 hover:border-warmPeach hover:text-warmPeach"
                         onClick={() => signIn()}
+                        href="/login"
                       >
                         Sign In
                       </button>

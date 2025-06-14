@@ -35,13 +35,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           const passwordsMatch = await bcrypt.compare(password, user.password);
 
-          // Logika ini sudah benar: hanya izinkan login jika password cocok DAN rolenya 'admin'
+          // --- PERUBAHAN UTAMA ADA DI SINI ---
+          // Cek apakah password cocok DAN perannya adalah 'admin'
           if (passwordsMatch && user.role === 'admin') {
-            return user;
+            return user; // Izinkan login jika user adalah admin
           }
-        }   
-        console.log('Invalid credentials or user is not an admin.');
-        return null; // Tolak login jika kredensial salah atau bukan admin
+        }
+        
+        console.log('Invalid credentials or not an admin.');
+        return null; // Tolak login jika password salah ATAU bukan admin
       },
     }),
   ],
@@ -50,7 +52,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, user }) {
       if (session.user && user) {
         session.user.id = user.id;
-        session.user.role = user.role; // Pastikan role masuk ke sesi
+        session.user.role = user.role;
       }
       return session;
     },

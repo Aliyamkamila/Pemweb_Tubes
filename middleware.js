@@ -1,20 +1,13 @@
-import { NextResponse } from "next/server";
+// Mengimpor fungsi 'auth' yang sudah dikonfigurasi dari auth.js
 import { auth } from "./auth";
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
-  const { pathname } = req.nextUrl;
+// Langsung ekspor 'auth' sebagai middleware default.
+// Ini akan secara otomatis menggunakan callback 'authorized' dari auth.config.js
+// untuk melindungi rute yang cocok.
+export default auth;
 
-  // Handle protected routes for dashboard
-  if (pathname.startsWith("/dashboard") && !isLoggedIn) {
-    // Ganti r.url menjadi req.url
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
-  // Allow access to other routes
-  return NextResponse.next();
-});
-
+// Konfigurasi ini tetap sama, untuk memastikan middleware hanya berjalan
+// pada rute-rute di bawah /dashboard.
 export const config = {
   matcher: ["/dashboard/:path*"],
 };
