@@ -57,27 +57,24 @@ export async function createContactMessage(prevState, formData) {
   }
 }
 
-// ✅ Update Contact Status
-export async function updateContactStatus(prevState, formData) {
+export async function updateContactMessage(prevState, formData) {
   const id = formData.get("id");
-  const status = formData.get("status");
-
-  if (!id || !status) {
-    return { message: "ID dan status harus diisi." };
-  }
+  const name = formData.get("name");
+  const email = formData.get("email");
+  const phone = formData.get("phone");
+  const message = formData.get("message");
 
   try {
     await prisma.contactMessage.update({
       where: { id },
-      data: { status },
+      data: { name, email, phone, message },
     });
 
     revalidatePath("/dashboard/adoptions");
-
-    return { message: "Status berhasil diperbarui successfully" };
+    return { message: "Pesan berhasil diperbarui successfully" };
   } catch (error) {
-    console.error("Error updating status:", error);
-    return { message: "Gagal memperbarui status." };
+    console.error("Gagal update pesan:", error);
+    return { message: "Gagal update pesan" };
   }
 }
 

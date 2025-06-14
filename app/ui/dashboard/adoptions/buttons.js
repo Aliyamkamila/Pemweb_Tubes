@@ -1,9 +1,8 @@
 "use client";
-
+import { useState, useEffect } from "react";
+import { useFormState } from "react-dom";
 import { PencilIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { useEffect, useState } from "react";       // ✅ untuk state & effect
-import { useFormState } from "react-dom";          // ✅ khusus useFormState
 import { updateContactStatus, deleteContactMessage } from "@/app/lib/actions/contact";
 
 
