@@ -1,8 +1,9 @@
 "use client";
 
-// Menggunakan hook dari React dan React DOM untuk state dan status form
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+// Ganti useActionState dari 'react'
+import { useFormState, useFormStatus } from 'react-dom';
+// Impor font yang dibutuhkan
+import { lusitana } from '@/app/ui/fonts';
 
 // Mengimpor ikon dan komponen yang diperlukan
 import {
@@ -13,28 +14,27 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/app/ui/button';
 import { authenticate } from '@/app/lib/actions/auth-actions';
-// import { PetMeLogo } from "../ui/logo";
 
 // Komponen utama untuk halaman login
 export default function LoginPage() {
-  // Menyiapkan state untuk menangani pesan error dari server action 'authenticate'
-  const [errorMessage, formAction] = useActionState(authenticate, undefined);
+  // Gunakan useFormState
+  const [errorMessage, dispatch] = useFormState(authenticate, undefined);
 
   return (
     <main className="flex items-center justify-center md:h-screen">
       <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-32">
-        <div className="flex h-20 w-full items-end rounded-lg bg-blue-500 p-3 md:h-36">
-          <div className="w-32 text-white md:w-36">
-            {/* <PetMeLogo /> */}
+        <div className="flex h-20 w-full items-end rounded-lg bg-darkBrown p-3 md:h-36">
+          <div className="w-full text-white">
+             {/* Menggunakan font lusitana yang sudah diimpor */}
+             <h1 className={`${lusitana.className} mb-3 text-2xl`}>
+              Silakan login untuk melanjutkan.
+            </h1>
           </div>
         </div>
 
         {/* Form login yang mengirim data ke server action */}
-        <form action={formAction} className="space-y-3">
+        <form action={dispatch} className="space-y-3">
           <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
-            <h1 className="mb-3 text-2xl">
-              Silakan login untuk melanjutkan.
-            </h1>
             <div className="w-full">
               {/* Input untuk Email */}
               <div>

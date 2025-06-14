@@ -1,148 +1,136 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
-import {
-  IdentificationIcon,
-  AtSymbolIcon,
-  PhoneIcon,
-  ChatBubbleBottomCenterTextIcon,
-  MapPinIcon,
-  PaperAirplaneIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/outline";
+import { useFormState } from "react-dom";
+import { useEffect, useRef } from "react";
 import { createContactMessage } from "@/app/lib/actions/contact";
+import SocialMediaIcons from "@/app/ui/social-media-icons";
+// TAMBAHKAN IMPOR FONT DI SINI
+import { opensans } from "@/app/ui/fonts";
+import { Button } from "@/app/ui/button";
+import { toast } from "sonner";
+import clsx from "clsx";
 
-// Komponen untuk menampilkan informasi kontak
-function ContactInfo() {
-  return (
-    <div className="flex flex-col justify-center text-beige">
-      <h2 className="text-3xl font-bold font-serif text-beige">
-        Informasi Kontak
-      </h2>
-      <p className="mt-2 text-beige/80">
-        Anda juga dapat menghubungi kami melalui detail di bawah ini.
-      </p>
-      <div className="mt-8 space-y-6 text-lg">
-        <div className="flex items-center gap-4">
-          <MapPinIcon className="w-6 h-6 text-beige flex-shrink-0" />
-          <span>Bandung, Jawa Barat, Indonesia</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <AtSymbolIcon className="w-6 h-6 text-beige flex-shrink-0" />
-          <span>contact@petadopt.com</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <PhoneIcon className="w-6 h-6 text-beige flex-shrink-0" />
-          <span>(022) 123-4567</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Komponen utama halaman
 export default function Page() {
   const initialState = { message: null, errors: {} };
-  const [state, formAction] = useActionState(createContactMessage, initialState);
+  const [state, dispatch] = useFormState(createContactMessage, initialState);
   const formRef = useRef(null);
 
   // Mereset form jika pengiriman berhasil
   useEffect(() => {
-    if (state.message && !state.errors) {
+    if (state.message?.includes("successfully")) {
+      toast.success(state.message);
       formRef.current?.reset();
+    } else if (state.message) {
+      toast.error(state.message);
     }
   }, [state]);
 
-  const isSuccess = state.message && !state.errors;
-  const isError = state.message && state.errors;
-
   return (
-    <div className="bg-darkBrown rounded-xl shadow-lg p-8 sm:p-12">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-16 lg:grid-cols-2">
-        {/* Kolom Informasi Kontak */}
-        <ContactInfo />
+    // Menggunakan font yang sudah diimpor
+    <div className={`py-12 md:py-24 ${opensans.className}`}>
+      <div className="container mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-darkBrown md:text-4xl">
+            Hubungi Kami
+          </h2>
+          <p className="mt-6 text-lg leading-8 text-darkBrown/80">
+            Punya pertanyaan atau ingin tahu lebih lanjut? Jangan ragu untuk
+            menghubungi kami.
+          </p>
+          <div className="mt-10">
+            <SocialMediaIcons />
+          </div>
+        </div>
 
-        {/* Kolom Formulir */}
-        <div className="p-8 rounded-lg bg-black/20">
-          {isSuccess ? (
-            // Tampilan setelah berhasil mengirim
-            <div className="flex flex-col items-center justify-center h-full text-center text-beige">
-              <CheckCircleIcon className="w-16 h-16 text-green-400 mb-4" />
-              <h2 className="text-2xl font-bold font-serif text-beige">
-                Pesan Terkirim!
-              </h2>
-              <p className="mt-2 text-lg">{state.message}</p>
+        <div className="mx-auto mt-16 max-w-xl md:mt-24">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
+            <div className="flex flex-col items-center justify-start text-center">
+              <span className="mb-4 rounded-lg bg-warmPeach p-3 text-darkBrown">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                  />
+                </svg>
+              </span>
+              <h3 className="mb-2 text-lg font-semibold text-darkBrown">
+                Alamat
+              </h3>
+              <p className="text-darkBrown/80">
+                Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bandung
+              </p>
             </div>
-          ) : (
-            // Tampilan Formulir
-            <form ref={formRef} action={formAction} className="space-y-6">
-              <div>
-                <h2 className="text-3xl font-bold font-serif text-beige">
-                  Hubungi Kami
-                </h2>
-                <p className="mt-2 text-sm text-beige/80">
-                  Kami akan menghubungi Anda secepat mungkin.
-                </p>
-              </div>
-
-              {/* Nama & Nomor Telepon */}
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-beige">Nama</label>
-                  <div className="relative">
-                    <input id="name" name="name" type="text" placeholder="Masukkan nama" className="peer block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-beige ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-beige placeholder:text-beige/50" />
-                    <IdentificationIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-beige/60" />
+            <div className="rounded-lg bg-gray-50 px-6 py-12 md:px-12">
+              <form action={dispatch} ref={formRef}>
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label htmlFor="name" className="sr-only">
+                      Nama
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      placeholder="Nama Anda"
+                      className="block w-full rounded-md border-0 px-3.5 py-2 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-darkBrown md:text-sm md:leading-6"
+                    />
                   </div>
-                  {state.errors?.name && <p className="mt-2 text-sm text-red-400">{state.errors.name[0]}</p>}
-                </div>
-                <div>
-                  <label htmlFor="phone" className="mb-2 block text-sm font-medium text-beige">Nomor Telepon</label>
-                  <div className="relative">
-                    <input id="phone" name="phone" type="tel" placeholder="Masukkan nomor telepon" className="peer block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-beige ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-beige placeholder:text-beige/50" />
-                    <PhoneIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-beige/60" />
+                  <div>
+                    <label htmlFor="email" className="sr-only">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      id="email"
+                      placeholder="Email Anda"
+                      className="block w-full rounded-md border-0 px-3.5 py-2 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-darkBrown md:text-sm md:leading-6"
+                    />
                   </div>
-                   {state.errors?.phone && <p className="mt-2 text-sm text-red-400">{state.errors.phone[0]}</p>}
+                  <div>
+                    <label htmlFor="phone" className="sr-only">
+                      No. Telepon
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      id="phone"
+                      placeholder="No. Telepon (Opsional)"
+                      className="block w-full rounded-md border-0 px-3.5 py-2 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-darkBrown md:text-sm md:leading-6"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="message" className="sr-only">
+                      Pesan
+                    </label>
+                    <textarea
+                      name="message"
+                      id="message"
+                      rows={4}
+                      placeholder="Pesan Anda"
+                      className="block w-full rounded-md border-0 px-3.5 py-2 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-darkBrown md:text-sm md:leading-6"
+                    ></textarea>
+                  </div>
                 </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label htmlFor="email" className="mb-2 block text-sm font-medium text-beige">Email</label>
-                <div className="relative">
-                  <input id="email" name="email" type="email" placeholder="Masukkan email" className="peer block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-beige ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-beige placeholder:text-beige/50" />
-                  <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-beige/60" />
+                <div className="mt-8 flex justify-end">
+                  <Button type="submit">Kirim Pesan</Button>
                 </div>
-                {state.errors?.email && <p className="mt-2 text-sm text-red-400">{state.errors.email[0]}</p>}
-              </div>
-
-              {/* Pesan */}
-              <div>
-                <label htmlFor="message" className="mb-2 block text-sm font-medium text-beige">Pesan</label>
-                <div className="relative">
-                  <textarea id="message" name="message" rows={4} placeholder="Masukkan pesan" className="peer block w-full rounded-md border-0 bg-white/5 py-2 pl-10 text-beige ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-beige placeholder:text-beige/50" />
-                  <ChatBubbleBottomCenterTextIcon className="pointer-events-none absolute left-3 top-5 h-5 w-5 -translate-y-1/2 text-beige/60" />
-                </div>
-                {state.errors?.message && <p className="mt-2 text-sm text-red-400">{state.errors.message[0]}</p>}
-              </div>
-
-              {/* Tombol Submit */}
-              <div className="pt-2">
-                <button type="submit" className="flex w-full items-center justify-center gap-3 rounded-md bg-beige px-3 py-2.5 text-center text-sm font-semibold text-darkBrown shadow-sm hover:bg-beige/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-beige">
-                  Kirim Pesan
-                  <PaperAirplaneIcon className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Menampilkan pesan error utama */}
-              {isError && (
-                <div className="flex items-center gap-2 mt-4 text-sm text-red-400">
-                  <ExclamationCircleIcon className="w-5 h-5" />
-                  <p>{state.message}</p>
-                </div>
-              )}
-            </form>
-          )}
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>

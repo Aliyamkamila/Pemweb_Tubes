@@ -10,30 +10,27 @@ export default async function SideNav() {
 
   return (
     <div className="flex h-full flex-col px-3 py-4 md:px-2">
-      {/* pet adopt logo */}
       <Link
-        className="mb-2 flex h-15 items-end justify-center rounded-md p-4 md:h-15"
-        href="/"
+        className="mb-2 flex h-20 items-end justify-start rounded-md bg-darkBrown p-4 lg:h-40"
+        href="/dashboard"
       >
-        <div className="flex w-32 items-center justify-center text-xl font-medium md:w-40">
-          <LifebuoyIcon className="h-7 w-7" />
-          <div className="pl-2">PetAdopt</div>
+        <div className="w-32 text-white md:w-40">
+          <div className="flex flex-row items-center leading-none text-white">
+            <LifebuoyIcon className="h-12 w-12 rotate-[15deg]" />
+            <p className="ml-2 text-[24px]">PetAdopt</p>
+          </div>
         </div>
       </Link>
-
-      {/* left nav links */}
       <div className="flex grow flex-row justify-between space-x-2 lg:flex-col lg:space-x-0 lg:space-y-2">
         <NavLinks userRole={userRole} />
-        {/* expander */}
         <div className="hidden h-auto w-full grow rounded-md lg:block"></div>
-        {/* sign out button */}
         <form
           action={async () => {
             "use server";
+            // PERUBAHAN DI SINI: Arahkan ke halaman utama ("/")
             await signOut({ redirectTo: "/" });
           }}
         >
-          {/* Tombol diubah agar mirip dengan NavLinks */}
           <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md border border-transparent p-3 text-sm font-medium hover:border-slate-400 lg:flex-none lg:justify-start lg:p-2 lg:px-3">
             <PowerIcon className="w-6" />
             <div className="hidden md:block">Sign Out</div>

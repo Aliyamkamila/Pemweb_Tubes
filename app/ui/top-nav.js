@@ -1,3 +1,5 @@
+// Lokasi: app/ui/top-nav.js
+
 "use client";
 import {
   Disclosure,
@@ -16,15 +18,16 @@ import {
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
-import { signIn, signOut } from "next-auth/react";
 import Link from "next/link";
+// Impor aksi server yang baru dibuat
+import { signOutAction } from "@/app/lib/actions/auth-actions";
 
 const links = [
   { name: "Home", href: "/" },
   { name: "Pets", href: "/pets" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
-  { name: "Dashboard", href: "/dashboard" }
+  { name: "Dashboard", href: "/dashboard" },
 ];
 
 export default function TopNav({ userImage, showUserProfile }) {
@@ -42,9 +45,15 @@ export default function TopNav({ userImage, showUserProfile }) {
                   <span className="absolute -inset-0.5" />
                   <span className="sr-only">Open main menu</span>
                   {open ? (
-                    <XMarkIcon className="block h-6 w-6 text-darkBrown" aria-hidden="true" />
+                    <XMarkIcon
+                      className="block h-6 w-6 text-darkBrown"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <Bars3Icon className="block h-6 w-6 text-beige" aria-hidden="true" />
+                    <Bars3Icon
+                      className="block h-6 w-6 text-beige"
+                      aria-hidden="true"
+                    />
                   )}
                 </DisclosureButton>
               </div>
@@ -80,15 +89,14 @@ export default function TopNav({ userImage, showUserProfile }) {
                         </Link>
                       )
                     )}
-                    {/* If there is no session then show the sign in button */}
+                    {/* Tombol Sign In diubah menjadi Link */}
                     {!showUserProfile && (
-                      <button
-                        className="rounded-md px-3 py-2 text-sm font-serif font-semibold text-beige hover:border-b-2 hover:border-warmPeach hover:text-warmPeach"
-                        onClick={() => signIn()}
+                      <Link
                         href="/login"
+                        className="rounded-md px-3 py-2 text-sm font-serif font-semibold text-beige hover:border-b-2 hover:border-warmPeach hover:text-warmPeach"
                       >
                         Sign In
-                      </button>
+                      </Link>
                     )}
                   </div>
                 </div>
@@ -124,15 +132,18 @@ export default function TopNav({ userImage, showUserProfile }) {
                       <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-warmPeach py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <MenuItem>
                           {({ focus }) => (
-                            <button
-                              onClick={() => signOut()}
-                              className={clsx(
-                                "w-full text-left px-4 py-2 text-sm text-darkBrown",
-                                { "bg-beige": focus }
-                              )}
-                            >
-                              Sign out
-                            </button>
+                            // Tombol Sign Out dibungkus dengan form
+                            <form action={signOutAction}>
+                              <button
+                                type="submit"
+                                className={clsx(
+                                  "w-full text-left px-4 py-2 text-sm text-darkBrown",
+                                  { "bg-beige": focus }
+                                )}
+                              >
+                                Sign out
+                              </button>
+                            </form>
                           )}
                         </MenuItem>
                       </MenuItems>
@@ -144,7 +155,7 @@ export default function TopNav({ userImage, showUserProfile }) {
           </div>
 
           {/* small screen drop down menu */}
-          <DisclosurePanel className="sm:hidden">
+          <DisclosurePanel className="md:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2">
               {links.map((link) =>
                 link.name === "Dashboard" && !showUserProfile ? null : (
@@ -164,13 +175,15 @@ export default function TopNav({ userImage, showUserProfile }) {
                   </Link>
                 )
               )}
+              {/* Tombol Sign In diubah menjadi Link */}
               {!showUserProfile && (
-                <button
+                <Link
+                  href="/login"
                   className="block rounded-md px-3 py-2 text-base font-serif font-semibold text-beige hover:border-b-2 hover:border-warmPeach hover:text-warmPeach hover:cursor-pointer"
-                  onClick={() => signIn()}
+                  onClick={() => close()}
                 >
                   Sign In
-                </button>
+                </Link>
               )}
             </div>
           </DisclosurePanel>

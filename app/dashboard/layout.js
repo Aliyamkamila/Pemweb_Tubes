@@ -1,7 +1,7 @@
 import SideNav from "@/app/ui/dashboard/sidenav";
 import { auth } from "@/auth";
 
-// Layout utama untuk dashboard admin dan employee (sudah Anda ubah)
+// Layout utama untuk dashboard admin dan employee
 const AdminDashboard = ({ children }) => {
   return (
     <div className="flex h-screen flex-col lg:flex-row bg-beige text-darkBrown font-sans">
@@ -15,13 +15,13 @@ const AdminDashboard = ({ children }) => {
   );
 };
 
-// Komponen Akses Ditolak (sudah Anda ubah dan terjemahkan)
+// Komponen Akses Ditolak
 const AccessDenied = () => {
   return (
     <div className="h-screen flex items-center justify-center bg-beige text-darkBrown">
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-2">Akses Ditolak</h1>
-        <p className="text-sm text-darkBrown/80"> {/* Diubah dari text-gray-600 agar lebih serasi */}
+        <p className="text-sm text-darkBrown/80">
           Anda tidak memiliki izin untuk mengakses halaman ini.
         </p>
       </div>
