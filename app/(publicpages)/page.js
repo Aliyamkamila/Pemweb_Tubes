@@ -20,10 +20,10 @@ export default function Page() {
         </h2>
         <div className="flex flex-wrap justify-center gap-4 px-4">
           {categories.map((category) => (
-            <Link
-              key={category.name}
-              href={`pets?page=1&category=${category.value}`}
-              className="bg-darkBrown text-beige hover:bg-warmPeach hover:text-darkBrown font-medium rounded-xl shadow px-6 py-3 transition-all duration-200"
+      <Link
+          key={category.name}
+          href={`/pets?page=1&category=${category.name}`}
+    className="bg-darkBrown text-beige hover:bg-warmPeach hover:text-darkBrown font-medium rounded-xl shadow px-6 py-3 transition-all duration-200"
             >
               {category.name}
             </Link>

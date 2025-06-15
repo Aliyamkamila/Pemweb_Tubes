@@ -49,7 +49,8 @@ export default function ContactPage() {
       <div className="grid grid-cols-1 md:grid-cols-2">
         {/* Kolom Informasi Kontak */}
         <div className="p-8 sm:p-12 bg-darkBrown">
-          <h2 className="text-3xl font-bold text-warmPeach mb-4">Informasi Kontak</h2>
+          {/* PENAMBAHAN: Tambahkan kelas 'font-serif' di sini */}
+          <h2 className="text-3xl font-bold font-serif text-warmPeach mb-4">Informasi Kontak</h2>
           <p className="text-beige/80 mb-8">
             Jangan ragu untuk menghubungi kami melalui detail di bawah ini atau kirimkan pesan langsung melalui formulir di samping.
           </p>
@@ -69,7 +70,8 @@ export default function ContactPage() {
 
         {/* Kolom Formulir Kontak */}
         <div className="p-8 sm:p-12 bg-beige/90 backdrop-blur-sm">
-          <h2 className="text-3xl font-bold text-center text-darkBrown mb-6">
+          {/* PENAMBAHAN: Tambahkan kelas 'font-serif' di sini */}
+          <h2 className="text-3xl font-bold font-serif text-center text-darkBrown mb-6">
             Hubungi Kami
           </h2>
           <form action={formAction} className="space-y-5">
