@@ -1,14 +1,14 @@
 "use client";
 
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
-import { updateAdoption } from "@/app/lib/actions/adoption";
+import { updateContactMessageStatus } from "@/app/lib/actions/contact"; 
 import { useState } from "react";
 import Link from "next/link";
 
-// Komponen utama formulir
-export default function EditAdoptionForm({ adoption, adoptionStatusList }) {
+// Main form component
+export default function EditAdoptionForm({ message }) { 
   const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState(''); 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
@@ -17,22 +17,22 @@ export default function EditAdoptionForm({ adoption, adoptionStatusList }) {
 
     setIsSubmitting(true);
     setErrors({});
-    setMessage('');
+    setFeedbackMessage(''); 
     
     const formData = new FormData(event.currentTarget);
     
-    // Panggil server action yang baru kita buat
-    const result = await updateAdoption(adoption.id, null, formData);
+    // Call the correct server action with the message ID
+    const result = await updateContactMessageStatus(message.id, formData); 
 
     setIsSubmitting(false);
 
     if (result && result.errors) {
         setErrors(result.errors);
-        setMessage(result.message || 'Gagal memperbarui status.');
+        setFeedbackMessage(result.message || 'Gagal memperbarui status.');
     } else if (result && result.message) {
-        setMessage(result.message);
+        setFeedbackMessage(result.message);
     }
-    // Redirect akan ditangani oleh server action jika berhasil
+    // Redirection will be handled by the server action on success
   };
 
   return (
@@ -41,37 +41,34 @@ export default function EditAdoptionForm({ adoption, adoptionStatusList }) {
             <div className="px-4 py-6 sm:p-8">
                 <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                     <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium leading-6 text-darkBrown">Nama Hewan</label>
-                        <p className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 px-3 bg-gray-100">{adoption.pet.name}</p>
+                        <label className="block text-sm font-medium leading-6 text-darkBrown">Nama Pengirim</label>
+                        <p className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 px-3 bg-gray-100">{message.name}</p> 
                     </div>
                     <div className="sm:col-span-3">
-                        <label className="block text-sm font-medium leading-6 text-darkBrown">Nama Pengaju</label>
-                        <p className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 px-3 bg-gray-100">{adoption.user.name}</p>
+                        <label className="block text-sm font-medium leading-6 text-darkBrown">Email Pengirim</label>
+                        <p className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 px-3 bg-gray-100">{message.email}</p> 
                     </div>
                     <div className="sm:col-span-4">
                         <label htmlFor="status" className="block text-sm font-medium leading-6 text-darkBrown">
-                            Ubah Status Adopsi
+                            Ubah Status Pesan
                         </label>
                         <div className="mt-2">
                             <select
                                 id="status"
                                 name="status"
                                 className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                                defaultValue={adoption.status}
+                                defaultValue={message.status} // Fix: Removed extra curly brace if any, ensuring clean JSX
                             >
-                                {adoptionStatusList.map((status) => (
-                                <option key={status.id} value={status.name}>
-                                    {status.name}
-                                </option>
-                                ))}
+                                <option value="Belum dihubungi">Belum dihubungi</option>
+                                <option value="Sudah dihubungi">Sudah dihubungi</option>
                             </select>
                         </div>
                         {errors.status && <p className="mt-2 text-sm text-red-600">{errors.status[0]}</p>}
                     </div>
                 </div>
-                {message && Object.keys(errors).length > 0 && (
+                {feedbackMessage && Object.keys(errors).length > 0 && (
                     <div className="flex items-center gap-2 text-sm text-red-600 mt-4">
-                        <ExclamationCircleIcon className="h-5 w-5" /> {message}
+                        <ExclamationCircleIcon className="h-5 w-5" /> {feedbackMessage}
                     </div>
                 )}
             </div>

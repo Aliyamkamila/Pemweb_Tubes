@@ -23,7 +23,12 @@ export async function fetchFilteredContactMessages(query, currentPage) {
       take: ITEMS_PER_PAGE,
       skip: offset,
     });
-    return messages;
+    // Ensure all messages are serializable
+    return messages.map(message => ({
+      ...message,
+      createdAt: message.createdAt ? message.createdAt.toISOString() : null,
+      updatedAt: message.updatedAt ? message.updatedAt.toISOString() : null, // Assuming updatedAt might exist
+    }));
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Gagal mengambil data pesan.');
@@ -58,6 +63,18 @@ export async function fetchContactMessageById(id) {
         const message = await prisma.contactMessage.findUnique({
             where: { id: id },
         });
+
+        // Explicitly convert Date objects to ISO strings for serialization
+        if (message) {
+            if (message.createdAt) {
+                message.createdAt = message.createdAt.toISOString();
+            }
+            if (message.updatedAt) { // Assuming an updatedAt field might exist
+                message.updatedAt = message.updatedAt.toISOString();
+            }
+            // Add other date fields if your ContactMessage schema has them
+        }
+
         return message;
     } catch (error) {
         console.error('Database Error:', error);
