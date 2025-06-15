@@ -1,3 +1,5 @@
+// Lokasi file: app/ui/dashboard/sidenav.js
+
 import Link from "next/link";
 import NavLinks from "@/app/ui/dashboard/nav-links";
 import { PowerIcon, LifebuoyIcon } from "@heroicons/react/24/outline";
@@ -11,7 +13,9 @@ export default async function SideNav() {
   return (
     <div className="flex h-full flex-col px-3 py-4 md:px-2">
       <Link
-        className="mb-2 flex h-20 items-end justify-start rounded-md bg-darkBrown p-4 lg:h-40"
+        // --- PERUBAHAN DI SINI ---
+        // Mengubah 'items-end' menjadi 'items-center'
+        className="mb-2 flex h-20 items-center justify-start rounded-md bg-darkBrown p-4 lg:h-40"
         href="/dashboard"
       >
         <div className="w-32 text-white md:w-40">
@@ -27,7 +31,6 @@ export default async function SideNav() {
         <form
           action={async () => {
             "use server";
-            // PERUBAHAN DI SINI: Arahkan ke halaman utama ("/")
             await signOut({ redirectTo: "/" });
           }}
         >

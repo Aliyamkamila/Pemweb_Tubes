@@ -1,59 +1,42 @@
-  "use server";
-  import { unlink } from "fs/promises";
-  import { z } from "zod";
-  import { revalidatePath } from "next/cache";
-  import { redirect } from "next/navigation";
-  import path from "path";
-  import prisma from "@/app/lib/prisma";
-  import { rolesWithPermission } from "@/app/lib/actions/authorization";
-  import { idSchema } from "@/app/lib/schemas/common";
-  import { validateAndUploadImages } from "@/app/lib/utils/validateAndUpload";
+// Lokasi: app/lib/actions/pet.js
 
-  // Define a schema for the pet form
-  const PetFormSchema = z.object({
-    name: z.string().min(1),
-    age: z.coerce
-      .number()
-      .gt(0, { message: "Silakan masukkan umur lebih dari 0." }),
-    gender: z.enum(["male", "female"], {
-      invalid_type_error: "Silakan pilih jenis kelamin.",
-    }),
-    species_id: z.string(),
-    breed: z.string(),
-    weight: z.coerce
-      .number()
-      .gt(0, { message: "Silakan masukkan berat lebih dari 0." }),
-    height: z.coerce
-      .number()
-      .gt(0, { message: "Silakan masukkan tinggi lebih dari 0." }),
-    city: z.string(),
-    state: z.string(),
-    description: z.string(),
-    published: z.enum(["true", "false"], {
-      invalid_type_error: "Silakan pilih status.",
-    }),
-    adoption_status_id: z.string(),
-  });
+"use server";
 
-  // Define a schema for PetLike
-  const createPetIdUserIdSchema = z.object({
-    parsedPetId: z.string(),
-    parsedUserId: z.string(),
-  });
+import { z } from "zod";
+import { prisma } from "@/app/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+// --- PERBAIKAN DI SINI ---
+// Mengubah path impor menjadi absolut menggunakan alias @/
+import { checkAdmin } from "@/app/lib/actions/authorization";
+import fs from "node:fs/promises";
+import path from "node:path";
 
-  // Error messages for the pet form
-  export const createPet = async (
-    prevState,
-    formData
-  ) => {
-    // Check if the user has permission
-    const hasPermission = await rolesWithPermission(["admin", "employee"]);
-    if (!hasPermission) {
-      throw new Error("Access Denied. Failed to Create Pet.");
-    }
+// Skema validasi untuk data teks
+const PetFormSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, { message: "Nama tidak boleh kosong." }),
+  age: z.string().min(1, { message: "Umur tidak boleh kosong." }),
+  gender: z.string(),
+  species_id: z.string(),
+  breed: z.string().min(1, { message: "Jenis tidak boleh kosong." }),
+  weight: z.string().min(1, { message: "Berat tidak boleh kosong." }),
+  height: z.string().min(1, { message: "Tinggi tidak boleh kosong." }),
+  city: z.string().min(1, { message: "Kota tidak boleh kosong." }),
+  state: z.string().min(1, { message: "Provinsi tidak boleh kosong." }),
+  description: z.string().min(1, { message: "Deskripsi tidak boleh kosong." }),
+  published: z.boolean(),
+  adoption_status_id: z.string(),
+});
 
-    // Validate form fields using Zod
-    const validatedFields = PetFormSchema.safeParse({
+const CreatePet = PetFormSchema.omit({ id: true });
+const UpdatePet = PetFormSchema.omit({ id: true });
+
+// === FUNGSI CREATE PET ===
+export async function createPet(prevState, formData) {
+  let pet; 
+  try {
+    const validatedFields = CreatePet.safeParse({
       name: formData.get("name"),
       age: formData.get("age"),
       gender: formData.get("gender"),
@@ -64,373 +47,110 @@
       city: formData.get("city"),
       state: formData.get("state"),
       description: formData.get("description"),
-      published: formData.get("published"),
+      published: formData.get("published") === "true",
       adoption_status_id: formData.get("adoption_status_id"),
     });
 
-    // If form validation fails, return errors early. Otherwise, continue.
     if (!validatedFields.success) {
       return {
         errors: validatedFields.error.flatten().fieldErrors,
-        message: "Missing Fields. Failed to Create pet.",
+        message: "Data tidak lengkap. Gagal menambahkan hewan.",
       };
     }
+    
+    pet = await prisma.pet.create({
+      data: validatedFields.data,
+    });
 
-    // Prepare data for insertion into the database
-    const {
-      name,
-      age,
-      gender,
-      species_id,
-      breed,
-      weight,
-      height,
-      city,
-      state,
-      description,
-      published,
-      adoption_status_id,
-    } = validatedFields.data;
+    const files = formData.getAll('images');
+    if (files && files.length > 0 && files[0].size > 0) {
+      const imagePromises = files.map(async (file) => {
+        if (!(file instanceof File) || file.size === 0) return;
+        if (file.size > 10 * 1024 * 1024) {
+            throw new Error(`File ${file.name} terlalu besar.`);
+        }
 
-    const petImages = formData.getAll("petImages");
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
+        const uploadDir = path.join(process.cwd(), 'public/uploads');
+        
+        await fs.mkdir(uploadDir, { recursive: true });
+        
+        await fs.writeFile(path.join(uploadDir, filename), buffer);
+        
+        const imageUrl = `/uploads/${filename}`;
 
-    // store the images urls
-    let imageUrlArray = [];
-
-    const result = await validateAndUploadImages(petImages);
-    if (Array.isArray(result)) {
-      // Images were successfully uploaded
-      imageUrlArray = result;
-    } else {
-      // There was an error
-      return result;
-    }
-
-    // Convert the published value to a boolean
-    const publishedToBoolean = published === "true" ? true : false;
-
-    // Insert the pet into the database
-    try {
-      await prisma.pet.create({
-        data: {
-          name: name,
-          age: age,
-          gender: gender,
-          species: {
-            connect: {
-              id: species_id,
-            },
+        return prisma.petImage.create({
+          data: {
+            url: imageUrl,
+            petId: pet.id,
           },
-          breed: breed,
-          weight: weight,
-          height: height,
-          city: city,
-          state: state,
-          description: description,
-          published: publishedToBoolean,
-          adoptionStatus: {
-            connect: {
-              id: adoption_status_id,
-            },
-          },
-          petImages: {
-            create: imageUrlArray.map((url) => ({
-              url: url,
-            })),
-          },
-        },
+        });
       });
-    } catch (error) {
-      return {
-        message: "Database Error: Failed to Create Pet.",
-      };
+
+      await Promise.all(imagePromises);
     }
 
-    // Revalidate the cache for the /dashboard/pets path
+  } catch (error) {
+    console.error("Error saat membuat data hewan:", error);
+    if (pet?.id) {
+        await prisma.pet.delete({ where: { id: pet.id }});
+    }
+    return {
+      message: "Error Internal: Gagal menambahkan hewan. " + error.message,
+    };
+  }
+
+  revalidatePath("/dashboard/pets");
+  redirect("/dashboard/pets");
+}
+
+// === FUNGSI UPDATE PET ===
+export async function updatePet(id, prevState, formData) {
+  const validatedFields = UpdatePet.safeParse({
+    name: formData.get("name"),
+    age: formData.get("age"),
+    gender: formData.get("gender"),
+    species_id: formData.get("species_id"),
+    breed: formData.get("breed"),
+    weight: formData.get("weight"),
+    height: formData.get("height"),
+    city: formData.get("city"),
+    state: formData.get("state"),
+    description: formData.get("description"),
+    published: formData.get("published") === "true",
+    adoption_status_id: formData.get("adoption_status_id"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Data tidak lengkap. Gagal memperbarui data hewan.",
+    };
+  }
+
+  try {
+    await prisma.pet.update({
+      where: { id: id },
+      data: validatedFields.data,
+    });
+  } catch (error) {
+    return { message: "Error Database: Gagal memperbarui data hewan." };
+  }
+
+  revalidatePath("/dashboard/pets");
+  redirect("/dashboard/pets");
+}
+
+// === FUNGSI DELETE PET ===
+export async function deletePet(id) {
+  try {
+    await prisma.pet.delete({
+      where: { id },
+    });
     revalidatePath("/dashboard/pets");
-
-    // Redirect to the /dashboard/pets path
-    redirect("/dashboard/pets");
-  };
-
-  export const updatePet = async (
-    id,
-    prevState,
-    formData
-  ) => {
-    // Check if the user has permission
-    const hasPermission = await rolesWithPermission(["admin", "employee"]);
-    if (!hasPermission) {
-      throw new Error("Access Denied. Failed to Update Pet.");
-    }
-
-    // Validate the id at runtime
-    const parsedId = idSchema.safeParse(id);
-    if (!parsedId.success) {
-      throw new Error("Invalid ID format.");
-    }
-    const validatedId = parsedId.data;
-
-    // Validate form fields using Zod
-    const validatedFields = PetFormSchema.safeParse({
-      name: formData.get("name"),
-      age: formData.get("age"),
-      gender: formData.get("gender"),
-      species_id: formData.get("species_id"),
-      breed: formData.get("breed"),
-      weight: formData.get("weight"),
-      height: formData.get("height"),
-      city: formData.get("city"),
-      state: formData.get("state"),
-      description: formData.get("description"),
-      published: formData.get("published"),
-      adoption_status_id: formData.get("adoption_status_id"),
-    });
-
-    // If form validation fails, return errors early. Otherwise, continue.
-    if (!validatedFields.success) {
-      return {
-        errors: validatedFields.error.flatten().fieldErrors,
-        message: "Missing Fields. Failed to Update Pet.",
-      };
-    }
-
-    // Prepare data for insertion into the database
-    const {
-      name,
-      age,
-      gender,
-      species_id,
-      breed,
-      weight,
-      height,
-      city,
-      state,
-      description,
-      published,
-      adoption_status_id,
-    } = validatedFields.data;
-
-    const petImages = formData.getAll("petImages");
-
-    // store the images urls
-    let imageUrlArray = [];
-
-    const result = await validateAndUploadImages(petImages);
-    if (Array.isArray(result)) {
-      // Images were successfully uploaded
-      imageUrlArray = result;
-    } else {
-      // Return the error
-      return result;
-    }
-
-    // Convert the published value to a boolean
-    const publishedToBoolean = published === "true" ? true : false;
-
-    // Update the pet in the database
-    try {
-      await prisma.pet.update({
-        where: { id: validatedId },
-        data: {
-          name: name,
-          age: age,
-          gender: gender,
-          species: {
-            connect: {
-              id: species_id,
-            },
-          },
-          breed: breed,
-          weight: weight,
-          height: height,
-          city: city,
-          state: state,
-          description: description,
-          published: publishedToBoolean,
-          adoptionStatus: {
-            connect: {
-              id: adoption_status_id,
-            },
-          },
-          petImages: {
-            create: imageUrlArray.map((url) => ({
-              url: url,
-            })),
-          },
-        },
-      });
-    } catch (error) {
-      return {
-        message: "Database Error: Failed to Update Pet.",
-      };
-    }
-
-    // Revalidate the cache for the /dashboard/pets path
-    revalidatePath("/dashboard/pets");
-
-    // Redirect to the /dashboard/pets path
-    redirect("/dashboard/pets");
-  };
-
-  export async function deletePet(id) {
-    // Check if the user has permission
-    const hasPermission = await rolesWithPermission(["admin", "employee"]);
-    if (!hasPermission) {
-      throw new Error("Access Denied. Failed to Delete Pet.");
-    }
-
-    // Validate the id at runtime
-    const parsedId = idSchema.safeParse(id);
-    if (!parsedId.success) {
-      throw new Error("Invalid ID format.");
-    }
-    const validatedId = parsedId.data;
-
-    // Delete the pet from the database
-    try {
-      await prisma.pet.delete({
-        where: { id: validatedId },
-      });
-
-      // Revalidate the cache for the /dashboard/pets path
-      revalidatePath("/dashboard/pets");
-
-    } catch (error) {
-      return {
-        message: "Database Error: Failed to Create Pet.",
-      };
-    }
+    return { message: "Hewan berhasil dihapus." };
+  } catch (error) {
+    return { message: "Error Database: Gagal menghapus hewan." };
   }
-
-  /**
-   * Deletes a pet image by its ID.
-   * 
-   * @param {string} id - The ID of the pet image to delete.
-   * @returns {Promise<{ message: string } | void>} - A message indicating the result of the operation.
-   * @throws {Error} - Throws an error if the user does not have permission, the ID is invalid, or a database error occurs.
-   */
-  export async function deletePetImage(id) {
-    // Check if the user has permission
-    const hasPermission = await rolesWithPermission(["admin", "employee"]);
-    if (!hasPermission) {
-      throw new Error("Access Denied. Failed to Delete Image.");
-    }
-
-    // Validate the id at runtime
-    const parsedId = idSchema.safeParse(id);
-    if (!parsedId.success) {
-      throw new Error("Invalid ID format.");
-    }
-    const validatedId = parsedId.data;
-
-    // Delete the image from the database
-    try {
-      const deletedPetImage = await prisma.petImage.delete({
-        where: { id: validatedId },
-      });
-
-      // Delete the file from the uploads folder
-      const filePath = path.join(process.cwd(), "public", deletedPetImage.url);
-      await unlink(filePath);
-
-      // Revalidate the cache for the /dashboard/pets path
-      revalidatePath("/dashboard/pets");
-
-    } catch (error) {
-      return {
-        message: "Database Error: Failed to delete Image.",
-      };
-    }
-  }
-
-  export async function createPetLike(petId, userId) {
-    // Check if the user has permission
-    const hasPermission = await rolesWithPermission([
-      "admin",
-      "employee",
-      "user",
-    ]);
-    if (!hasPermission) {
-      throw new Error("Access Denied. Failed to Create Pet Like.");
-    }
-
-    // Validate at runtime using Zod
-    const validatedArgs = createPetIdUserIdSchema.safeParse({
-      parsedPetId: petId,
-      parsedUserId: userId,
-    });
-    if (!validatedArgs.success) {
-      return {
-        errors: validatedArgs.error.flatten().fieldErrors,
-        message: "Missing Fields. Failed to Update Pet.",
-      };
-    }
-
-    // Prepare data for insertion into the database
-    const { parsedPetId, parsedUserId } = validatedArgs.data;
-
-    // Insert the pet like into the database
-    try {
-      await prisma.like.create({
-        data: {
-          petId: parsedPetId,
-          userId: parsedUserId,
-        },
-      });
-
-      // Revalidate the cache for the /pets path
-      revalidatePath("/pets");
-      
-    } catch (error) {
-      return {
-        message: "Database Error: Failed to add pet to likes.",
-      };
-    }
-  }
-
-  export async function deletePetLike(petId, userId) {
-    // Check if the user has permission
-    const hasPermission = await rolesWithPermission([
-      "admin",
-      "employee",
-      "user",
-    ]);
-    if (!hasPermission) {
-      throw new Error("Access Denied. Failed to Delete Pet.");
-    }
-
-    // Validate at runtime using Zod
-    const parsedArgs = createPetIdUserIdSchema.safeParse({
-      parsedPetId: petId,
-      parsedUserId: userId,
-    });
-    if (!parsedArgs.success) {
-      return {
-        errors: parsedArgs.error.flatten().fieldErrors,
-        message: "Missing Fields. Failed to Update Pet.",
-      };
-    }
-    // Prepare data for insertion into the database
-    const { parsedPetId, parsedUserId } = parsedArgs.data;
-
-    // Delete the pet like from the database
-    try {
-      await prisma.like.delete({
-        where: {
-          userId_petId: {
-            petId: parsedPetId,
-            userId: parsedUserId,
-          },
-        },
-      });
-
-      // Revalidate the cache for the /pets path
-      revalidatePath("/pets");
-
-    } catch (error) {
-      return {
-        message: "Database Error: Failed to delete pet to likes.",
-      };
-    }
-  }
+}

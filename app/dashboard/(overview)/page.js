@@ -1,5 +1,3 @@
-// TAMBAHKAN IMPOR FONT DI SINI
-import { opensans } from "@/app/ui/fonts";
 import { fetchCardData } from "@/app/lib/data/pets/pet";
 import CardWrapper from "@/app/ui/dashboard/cards";
 import LatestPets from "@/app/ui/dashboard/latest-pets";
@@ -12,8 +10,9 @@ export default async function Page() {
 
   return (
     <main>
-      {/* Menggunakan font yang sudah diimpor */}
-      <h1 className="mb-4 text-xl md:text-2xl font-normal">Dasbor
+      {/* DIUBAH: Menyamakan style judul */}
+      <h1 className="mb-8 font-serif text-3xl font-bold text-darkBrown">
+        Dasbor
       </h1>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Suspense fallback={<CardsSkeleton />}>

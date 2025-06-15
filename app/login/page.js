@@ -1,73 +1,69 @@
+// Lokasi: app/login/page.js
+
 "use client";
 
-// Ganti useActionState dari 'react'
-import { useFormState, useFormStatus } from 'react-dom';
-// Impor font yang dibutuhkan
-import { lusitana } from '@/app/ui/fonts';
-
-// Mengimpor ikon dan komponen yang diperlukan
+import { useFormState, useFormStatus } from "react-dom";
+import { inter, lusitana } from "@/app/ui/fonts";
 import {
   AtSymbolIcon,
   KeyIcon,
   ExclamationCircleIcon,
-} from '@heroicons/react/24/outline';
-import { ArrowRightIcon } from '@heroicons/react/20/solid';
-import { Button } from '@/app/ui/button';
-import { authenticate } from '@/app/lib/actions/auth-actions';
+} from "@heroicons/react/24/outline";
+import { ArrowRightIcon } from "@heroicons/react/20/solid";
+import { Button } from "@/app/ui/button";
+import { authenticate } from "@/app/lib/actions/auth-actions";
 
-// Komponen utama untuk halaman login
 export default function LoginPage() {
-  // Gunakan useFormState
-  const [errorMessage, dispatch] = useFormState(authenticate, undefined);
+  const [errorMessage, formAction] = useFormState(authenticate, undefined);
 
   return (
-    <main className="flex items-center justify-center md:h-screen">
+    <main className="flex items-center justify-center md:h-screen bg-beige">
       <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-32">
-        <div className="flex h-20 w-full items-end rounded-lg bg-darkBrown p-3 md:h-36">
-          <div className="w-full text-white">
-             {/* Menggunakan font lusitana yang sudah diimpor */}
-             <h1 className={`${lusitana.className} mb-3 text-2xl`}>
-              Silakan login untuk melanjutkan.
-            </h1>
+        <div className="flex h-20 w-full items-end rounded-lg bg-darkBrown p-3 md:h-36 shadow-md">
+          <div className="w-full text-beige">
+            <h1 className="font-serif text-3xl">PetAdopt Login</h1>
           </div>
         </div>
 
-        {/* Form login yang mengirim data ke server action */}
-        <form action={dispatch} className="space-y-3">
-          <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
+        <form action={formAction} className="space-y-3">
+          <div className="flex-1 rounded-lg bg-beige/80 px-6 pb-4 pt-8 shadow border border-darkBrown/20 backdrop-blur-sm">
+            <h2 className={`${inter.className} mb-3 text-xl text-darkBrown`}>
+              Silakan login untuk melanjutkan.
+            </h2>
+
             <div className="w-full">
-              {/* Input untuk Email */}
+              {/* Email Input */}
               <div>
                 <label
-                  className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+                  className="mb-3 mt-5 block text-xs font-medium text-darkBrown"
                   htmlFor="email"
                 >
                   Email
                 </label>
                 <div className="relative">
                   <input
-                    className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                    className="peer block w-full rounded-md border border-darkBrown/30 bg-white/80 py-[9px] pl-10 text-sm placeholder:text-darkBrown/60 text-darkBrown focus:border-warmPeach focus:ring-warmPeach"
                     id="email"
                     type="email"
                     name="email"
                     placeholder="Masukkan alamat email Anda"
                     required
                   />
-                  <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+                  <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-darkBrown/60 peer-focus:text-darkBrown" />
                 </div>
               </div>
 
-              {/* Input untuk Password */}
+              {/* Password Input */}
               <div className="mt-4">
                 <label
-                  className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+                  className="mb-3 mt-5 block text-xs font-medium text-darkBrown"
                   htmlFor="password"
                 >
                   Password
                 </label>
                 <div className="relative">
                   <input
-                    className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                    className="peer block w-full rounded-md border border-darkBrown/30 bg-white/80 py-[9px] pl-10 text-sm placeholder:text-darkBrown/60 text-darkBrown focus:border-warmPeach focus:ring-warmPeach"
                     id="password"
                     type="password"
                     name="password"
@@ -75,26 +71,23 @@ export default function LoginPage() {
                     required
                     minLength={6}
                   />
-                  <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+                  <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-darkBrown/60 peer-focus:text-darkBrown" />
                 </div>
               </div>
             </div>
-            {/* Tombol Login */}
+
             <LoginButton />
-            
-            {/* Area untuk menampilkan pesan error jika login gagal */}
-            <div
-              className="flex h-8 items-end space-x-1"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              {errorMessage && (
-                <>
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-                  <p className="text-sm text-red-500">{errorMessage}</p>
-                </>
-              )}
-            </div>
+
+            {errorMessage && (
+              <div
+                className="flex h-8 items-end space-x-1 mt-2"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                <p className="text-sm text-red-500">{errorMessage}</p>
+              </div>
+            )}
           </div>
         </form>
       </div>
@@ -102,12 +95,16 @@ export default function LoginPage() {
   );
 }
 
-// Komponen terpisah untuk tombol login agar bisa menggunakan hook 'useFormStatus'
 function LoginButton() {
-  const { pending } = useFormStatus(); // 'pending' akan true saat form sedang disubmit
+  const { pending } = useFormStatus();
   return (
-    <Button className="mt-4 w-full" aria-disabled={pending}>
-      Login <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+    <Button
+      // --- PERUBAHAN DI SINI ---
+      // Tombol diubah menjadi bg-darkBrown dengan teks beige
+      className="mt-4 w-full bg-darkBrown text-beige hover:bg-darkBrown/90"
+      aria-disabled={pending}
+    >
+      Login <ArrowRightIcon className="ml-auto h-5 w-5 text-beige" />
     </Button>
   );
 }

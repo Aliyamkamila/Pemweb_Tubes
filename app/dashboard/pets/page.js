@@ -1,10 +1,7 @@
-// aliyamkamila/pemweb_tubes/Pemweb_Tubes-84e7f826e0f5017c718ac0c5db68209199070919/app/dashboard/pets/page.js
-
 import Pagination from "@/app/ui/dashboard/pets/pagination";
 import Search from "@/app/ui/search";
 import PetsTable from "@/app/ui/dashboard/pets/table";
 import { CreatePet } from "@/app/ui/dashboard/pets/buttons";
-import { opensans } from "@/app/ui/fonts";
 import { PetsTableSkeleton } from "@/app/ui/skeletons";
 import { Suspense } from "react";
 import { fetchPetsPages } from "@/app/lib/data/pets/pet";
@@ -18,7 +15,10 @@ export default async function Page({ searchParams }) {
         <div className="w-full">
             {/* Header: Judul Halaman dan Tombol Aksi */}
             <div className="flex w-full items-center justify-between mb-6">
-                <h1 className={`${opensans.className} text-3xl font-bold text-darkBrown`}>
+                {/* PERUBAHAN DI SINI:
+                  Mengganti className dari opensans ke `font-serif` agar konsisten. 
+                */}
+                <h1 className="font-serif text-3xl font-bold text-darkBrown">
                     Daftar Hewan
                 </h1>
                 <CreatePet />
