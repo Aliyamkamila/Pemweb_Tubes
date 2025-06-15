@@ -40,8 +40,8 @@ export async function createContactMessage(prevState, formData) {
   }
 
   revalidatePath("/dashboard/adoptions");
-  return { message: "Pesan Anda berhasil dikirim!", success: true, errors: {} };
-}
+// Lokasi: app/lib/actions/contact.js
+  return { message: "Pesan sudah dikirim, kami akan segera menghubungi Anda secepatnya.", success: true, errors: {} };}
 
 
 /**

@@ -1,19 +1,19 @@
-// app/layout.js
+// Lokasi: app/layout.js
 import './globals.css';
-import { Toaster } from 'sonner'; // Pastikan ini diimpor
-import { inter } from "./ui/fonts"; // Ganti dengan font yang Anda gunakan
+import { Toaster } from 'sonner';
+import { inter } from "./ui/fonts"; // Menggunakan font Inter
 
 export const metadata = {
   title: "Penampungan Hewan",
   description: "Temukan sahabat baru Anda.",
 };
 
-export default async function RootLayout({ children }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="id">
-      <body className={inter.className}> {/* Pastikan className font diterapkan */}
+      <body className={`${inter.className} antialiased`}> {/* Menerapkan font Inter & antialiased */}
         {children}
-        <Toaster position="top-center" richColors /> {/* Ini SANGAT PENTING */}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );
