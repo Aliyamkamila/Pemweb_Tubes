@@ -42,6 +42,8 @@ async function main() {
   const species = [
     { id: "134aadd0-2436-4f5c-bdd6-c7245cf3e3a2", name: "Anjing" },
     { id: "16fbe716-4b15-4fec-8f11-2a6ab543e886", name: "Kucing" },
+    { id: "ID_REPTIL_BARU", name: "Reptil" }, // Tambahkan ini
+    { id: "ID_BURUNG_BARU", name: "Burung" }, // Tambahkan ini
   ];
   for (const s of species) {
     await prisma.species.create({ data: s });
@@ -123,35 +125,35 @@ async function main() {
       petImages: { create: [{ url: "/uploads/cat2.webp" }] },
     },
     {
-      name: "Buddy",
-      age: 1,
-      gender: "Jantan",
-      species: { connect: { id: "134aadd0-2436-4f5c-bdd6-c7245cf3e3a2" } },
-      breed: "Beagle",
-      weight: 12.0,
-      height: 40,
-      city: "Yogyakarta",
-      state: "DI Yogyakarta",
-      description: "Anjing lincah yang suka diajak jalan-jalan.",
-      published: true,
-      adoptionStatus: { connect: { id: "640566d8-2619-4764-8660-61a39baf075e" } },
-      petImages: { create: [{ url: "/uploads/dog3.jpg" }] },
-    },
-    {
-      name: "Bella",
-      age: 2,
-      gender: "Betina",
-      species: { connect: { id: "16fbe716-4b15-4fec-8f11-2a6ab543e886" } },
-      breed: "Anggora",
-      weight: 3.8,
-      height: 23,
-      city: "Denpasar",
-      state: "Bali",
-      description: "Kucing anggora yang cantik dengan bulu lebat.",
-      published: true,
-      adoptionStatus: { connect: { id: "640566d8-2619-4764-8660-61a39baf075e" } },
-      petImages: { create: [{ url: "/uploads/cat3.webp" }] },
-    },
+    name: "Bintik",
+    age: 0.5,
+    gender: "Jantan",
+    species: { connect: { id: "ID_UNIK_REPTIL" } }, // Hubungkan ke ID reptil yang baru
+    breed: "Leopard Gecko",
+    weight: 0.1,
+    height: 15,
+    city: "Bandung",
+    state: "Jawa Barat",
+    description: "Gecko yang tenang dan mudah dirawat.",
+    published: true,
+    adoptionStatus: { connect: { id: "640566d8-2619-4764-8660-61a39baf075e" } },
+    petImages: { create: [{ url: "/uploads/gecko1.jpg" }] }, // Pastikan ada gambar yang sesuai
+  },
+  {
+    name: "Kenari",
+    age: 1,
+    gender: "Betina",
+    species: { connect: { id: "ID_UNIK_BURUNG" } }, // Hubungkan ke ID burung yang baru
+    breed: "Kenari",
+    weight: 0.03,
+    height: 10,
+    city: "Jakarta",
+    state: "DKI Jakarta",
+    description: "Burung dengan suara merdu, sangat cocok untuk teman di rumah.",
+    published: true,
+    adoptionStatus: { connect: { id: "640566d8-2619-4764-8660-61a39baf075e" } },
+    petImages: { create: [{ url: "/uploads/kenari1.jpg" }] }, // Pastikan ada gambar yang sesuai
+  },
     {
       name: "Max",
       age: 4,

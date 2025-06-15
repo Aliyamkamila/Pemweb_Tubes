@@ -1,36 +1,41 @@
 "use client";
-import { useActionState } from "react";
 import { createPet } from "@/app/lib/actions/pet";
 import Link from "next/link";
-import { PhotoIcon } from "@heroicons/react/24/outline";
+import { PhotoIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import { AdoptionStatus, Species } from "@prisma/client";
-import { TrashIcon } from "@heroicons/react/24/outline";
-import Image from "next/image";
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from "@/app/lib/constants";
+import Image from "next/image";
 
-export default function EditPetForm({
-  speciesList,
-  adoptionStatusList,
-}) {
+export default function EditPetForm({ speciesList, adoptionStatusList }) {
   const [files, setFiles] = useState([]);
-  const initialState = { message: '', errors: {} };
-  const [state, dispatch] = useActionState(createPet, initialState);
+  const [state, setState] = useState({ message: "", errors: {} });
 
-  // handle file change event
+  const handleCreatePet = async (formData) => {
+    console.log("Submitting formData:");
+    for (let [key, val] of formData.entries()) {
+      console.log(`${key}:`, val);
+    }
+
+    try {
+      const res = await createPet(formData);
+      setState({ message: "Berhasil tambah hewan!", errors: {} });
+    } catch (err) {
+      console.error("Error saat kirim:", err);
+      setState({ message: "Gagal tambah hewan!", errors: { nama: "Error terjadi" } });
+    }
+  };
+
   const handleFileChange = (event) => {
     const { files } = event.target;
     if (files) {
-      // Filter out invalid files with unsupported file types and max size of 5MB
       const validFiles = Array.from(files).filter(
         (file) =>
           ALLOWED_MIME_TYPES.includes(file.type) && file.size <= MAX_FILE_SIZE
       );
-      setFiles((prevFiles) => [...prevFiles, ...validFiles]);
+      setFiles((prev) => [...prev, ...validFiles]);
     }
   };
 
-  // handle drop event
   const handleDrop = (event) => {
     event.preventDefault();
     if (event.dataTransfer.items) {
@@ -39,35 +44,27 @@ export default function EditPetForm({
         .map((item) => item.getAsFile())
         .filter(
           (file) =>
-            file !== null &&
+            file &&
             ALLOWED_MIME_TYPES.includes(file.type) &&
             file.size <= MAX_FILE_SIZE
         );
-      setFiles((prevFiles) => [...prevFiles, ...droppedFiles]);
+      setFiles((prev) => [...prev, ...droppedFiles]);
     }
   };
 
-  // handle drag over event
-  const handleDragOver = (event) => {
+  const handleDragOver = (event) => event.preventDefault();
+
+  const handleFormSubmit = async (event) => {
     event.preventDefault();
-  };
-
-  // handle form submit
-  const handleFormSubmit = (event) => {
-    event.preventDefault(); // Prevent the default form submission
-
-    // You can access the form data here if needed
     const formData = new FormData(event.currentTarget);
 
-    // Append the files to the form data
     files.forEach((file) => {
       if (file && file.size > 0) {
-        formData.append(`petImages`, file);
+        formData.append("petImages", file);
       }
     });
 
-    // Dispatch the form data
-    dispatch(formData);
+    await handleCreatePet(formData);
   };
 
   return (
