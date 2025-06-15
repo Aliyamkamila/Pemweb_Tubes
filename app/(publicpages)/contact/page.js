@@ -1,18 +1,27 @@
 // Lokasi: app/(publicpages)/contact/page.js
 "use client";
 
+import { useEffect } from "react";
 import { useFormState } from "react-dom";
 import { createContactMessage } from "@/app/lib/actions/contact";
 import { Button } from "@/app/ui/button";
+import { toast } from "sonner"; // Impor toast dari sonner
 
-// Mengganti nama komponen agar lebih sesuai dengan nama file (praktik yang baik)
 export default function ContactPage() {
-  const initialState = { message: null, errors: {} };
-  
-  // 'formAction' adalah fungsi yang seharusnya dieksekusi oleh form
+  const initialState = { message: null, errors: {}, success: false };
   const [state, formAction] = useFormState(createContactMessage, initialState);
 
-  // Fungsi sederhana untuk styling, menggantikan clsx sementara
+  // useEffect untuk memantau perubahan state dan menampilkan notifikasi
+  useEffect(() => {
+    if (state.success) {
+      toast.success(state.message); // Tampilkan notifikasi sukses
+      // Anda bisa mereset form di sini jika perlu
+      document.querySelector("form")?.reset();
+    } else if (state.message && Object.keys(state.errors).length > 0) {
+      toast.error(state.message); // Tampilkan notifikasi error
+    }
+  }, [state]);
+
   const inputClasses = (hasError) =>
     `block w-full rounded-md border py-2 px-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-darkBrown ${
       hasError ? "border-red-500 ring-red-500" : "border-gray-300"
@@ -25,7 +34,6 @@ export default function ContactPage() {
           Hubungi Kami
         </h2>
 
-        {/* Pastikan 'action' di sini menggunakan 'formAction' dari useFormState */}
         <form action={formAction} className="space-y-5">
           {/* Input Nama */}
           <div>
@@ -40,7 +48,7 @@ export default function ContactPage() {
             />
             {state.errors?.name && (
               <p className="mt-2 text-sm text-red-600">
-                {state.errors.name}
+                {state.errors.name.join(', ')}
               </p>
             )}
           </div>
@@ -58,7 +66,7 @@ export default function ContactPage() {
             />
             {state.errors?.email && (
               <p className="mt-2 text-sm text-red-600">
-                {state.errors.email}
+                {state.errors.email.join(', ')}
               </p>
             )}
           </div>
@@ -75,7 +83,7 @@ export default function ContactPage() {
             />
             {state.errors?.phone && (
               <p className="mt-2 text-sm text-red-600">
-                {state.errors.phone}
+                {state.errors.phone.join(', ')}
               </p>
             )}
           </div>
@@ -93,7 +101,7 @@ export default function ContactPage() {
             ></textarea>
             {state.errors?.message && (
               <p className="mt-2 text-sm text-red-600">
-                {state.errors.message}
+                {state.errors.message.join(', ')}
               </p>
             )}
           </div>
@@ -103,15 +111,6 @@ export default function ContactPage() {
               Kirim Pesan
             </Button>
           </div>
-
-           {/* Menampilkan pesan sukses atau gagal dari server */}
-           {state.message && (
-            <div className="mt-4 text-center">
-              <p className={`text-sm ${state.errors ? 'text-red-600' : 'text-green-600'}`}>
-                {state.message}
-              </p>
-            </div>
-           )}
         </form>
       </div>
     </div>

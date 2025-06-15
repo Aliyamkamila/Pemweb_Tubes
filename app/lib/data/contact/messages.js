@@ -1,13 +1,9 @@
-// File: app/lib/data/contact/messages.js
+import prisma from "@/app/lib/prisma";
+import { unstable_noStore as noStore } from "next/cache";
 
-import prisma from '@/app/lib/prisma';
-import { unstable_noStore as noStore } from 'next/cache';
+const ITEMS_PER_PAGE = 10;
 
-const ITEMS_PER_PAGE = 10; // Sesuaikan jumlah item per halaman jika perlu
-
-/**
- * Mengambil pesan kontak yang difilter dari database dengan paginasi.
- */
+// Mengambil pesan dengan filter dan paginasi untuk tabel dashboard
 export async function fetchFilteredContactMessages(query, currentPage) {
   noStore();
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -34,10 +30,7 @@ export async function fetchFilteredContactMessages(query, currentPage) {
   }
 }
 
-/**
- * Menghitung total halaman untuk pesan kontak berdasarkan query.
- * FUNGSI YANG HILANG ADA DI SINI.
- */
+// Menghitung total halaman untuk paginasi
 export async function fetchContactMessagesPages(query) {
   noStore();
   try {
@@ -50,24 +43,24 @@ export async function fetchContactMessagesPages(query) {
         ],
       },
     });
-
     const totalPages = Math.ceil(count / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Gagal menghitung total halaman pesan.');
+    throw new Error('Gagal menghitung total halaman.');
   }
 }
 
-
+// Mengambil satu pesan berdasarkan ID untuk halaman edit
 export async function fetchContactMessageById(id) {
-  try {
-    const message = await prisma.contactMessage.findUnique({
-      where: { id: id },
-    });
-    return message;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Gagal mengambil data pesan.');
-  }
+    noStore();
+    try {
+        const message = await prisma.contactMessage.findUnique({
+            where: { id: id },
+        });
+        return message;
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Gagal mengambil data pesan.');
+    }
 }

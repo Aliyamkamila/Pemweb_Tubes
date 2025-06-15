@@ -1,31 +1,35 @@
-// Lokasi: app/dashboard/adoptions/[id]/edit/page.js
+import Form from '@/app/ui/dashboard/adoptions/edit-form';
+import Breadcrumbs from '@/app/ui/dashboard/adoptions/breadcrumbs';
+import { fetchContactMessageById } from '@/app/lib/data/contact/messages'; // DIUBAH: Path import diperbaiki
+import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 
-import { notFound } from "next/navigation";
-import { getMessageById } from "@/app/lib/data/contact";
-import EditContactForm from "@/app/ui/dashboard/adoptions/edit-form"; // Akan kita gunakan form yang sudah ada
-import Breadcrumbs from "@/app/ui/dashboard/adoptions/breadcrumbs"; // Pastikan breadcrumbs ini ada
+export const metadata = {
+  title: 'Ubah Status Pesan',
+};
 
 export default async function Page({ params }) {
-  const { id } = params;
-  const message = await getMessageById(id);
+    const id = params.id;
+    // DIUBAH: Memanggil fungsi dengan nama yang benar
+    const message = await fetchContactMessageById(id);
 
-  if (!message) {
-    notFound();
-  }
+    if (!message) {
+        notFound();
+    }
 
   return (
     <main>
       <Breadcrumbs
-        items={[ // Pastikan prop yang digunakan 'items' atau sesuaikan
-          { label: "Pesan Adopsi", href: "/dashboard/adoptions" },
+        breadcrumbs={[
+          { label: 'Pesan Adopsi', href: '/dashboard/adoptions' },
           {
-            label: "Edit Pesan",
+            label: 'Ubah Status',
             href: `/dashboard/adoptions/${id}/edit`,
             active: true,
           },
         ]}
       />
-      <EditContactForm message={message} />
+      <Form message={message} />
     </main>
   );
 }

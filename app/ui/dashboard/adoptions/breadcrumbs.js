@@ -1,40 +1,27 @@
-// app/ui/dashboard/adoptions/breadcrumbs.js
-"use client";
+import Link from 'next/link';
+import { clsx } from 'clsx';
 
-import Link from "next/link";
-
-export default function Breadcrumbs({ items }) {
+// Komponen Breadcrumbs untuk navigasi
+// Prop diubah dari 'items' menjadi 'breadcrumbs' untuk konsistensi
+export default function Breadcrumbs({ breadcrumbs }) {
   return (
-    <nav className="text-sm text-gray-500 mb-4">
-      <ol className="list-none p-0 inline-flex space-x-1">
-        {items.map((item, index) => (
-          <li key={index} className="flex items-center">
-            {index > 0 && <span className="mx-1">/</span>}
-            <Link href={item.href}>
-              <span className="hover:underline text-blue-600">{item.label}</span>
-            </Link>
+    <nav aria-label="Breadcrumb" className="mb-6 block">
+      <ol className={clsx('flex text-gray-600')}>
+        {breadcrumbs && breadcrumbs.map((breadcrumb, index) => (
+          <li
+            key={breadcrumb.href}
+            aria-current={breadcrumb.active}
+            className={clsx(
+              breadcrumb.active ? 'text-gray-900 font-semibold' : 'text-gray-500',
+            )}
+          >
+            <Link href={breadcrumb.href}>{breadcrumb.label}</Link>
+            {index < breadcrumbs.length - 1 ? (
+              <span className="mx-2 inline-block">/</span>
+            ) : null}
           </li>
         ))}
       </ol>
     </nav>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

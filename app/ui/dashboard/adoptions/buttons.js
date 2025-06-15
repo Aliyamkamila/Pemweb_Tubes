@@ -1,74 +1,44 @@
-// Lokasi: app/ui/dashboard/adoptions/buttons.js
+'use client';
 
-"use client";
-import { useState, useEffect } from "react";
-import { useFormState } from "react-dom";
-import { PencilIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
-// Impor aksi yang benar
-import { updateContactStatus, deleteContactMessage } from "@/app/lib/actions/contact";
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
+import { deleteContactMessage } from '@/app/lib/actions/contact';
+import { toast } from 'sonner';
 
-// ... (EditMessage tetap sama)
-export function EditMessage({ id }) {
-    return (
-        <Link
-            href={`/dashboard/adoptions/${id}/edit`}
-            className="rounded-md border p-2 hover:bg-gray-100"
-        >
-            <PencilIcon className="w-5" />
-        </Link>
-    );
-}
-
-// Komponen untuk mengubah status
-export function UpdateStatus({ message }) {
-  const initialState = { message: null };
-  // Gunakan useFormState dengan aksi yang benar
-  const [state, formAction] = useFormState(updateContactStatus, initialState);
-  const [showSuccess, setShowSuccess] = useState(false);
-
-  useEffect(() => {
-    if (state?.message) {
-      setShowSuccess(true);
-      const timer = setTimeout(() => setShowSuccess(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [state]);
-
+// Tombol untuk mengarahkan ke halaman edit status
+export function UpdateMessageStatus({ id }) {
   return (
-    <form action={formAction} className="flex items-center gap-2">
-      <input type="hidden" name="id" value={message.id} />
-      <select
-        name="status"
-        defaultValue={message.status}
-        className="rounded-md border border-gray-200 py-1 pl-2 pr-7 text-sm"
-      >
-        <option value="Belum dihubungi">Belum dihubungi</option>
-        <option value="Sudah dihubungi">Sudah dihubungi</option>
-      </select>
-      <button
-        type="submit"
-        className="rounded-md bg-darkBrown px-3 py-1 text-sm text-white hover:bg-opacity-90"
-      >
-        Update
-      </button>
-      {showSuccess && (
-         <CheckIcon className="h-5 w-5 text-green-500" />
-      )}
-    </form>
+    <Link
+      href={`/dashboard/adoptions/${id}/edit`}
+      className="rounded-md border p-2 hover:bg-gray-100 transition-colors"
+      aria-label="Ubah status pesan"
+    >
+      <PencilIcon className="w-5" />
+    </Link>
   );
 }
 
-// ... (DeleteMessage tetap sama)
+// Tombol untuk menghapus pesan
 export function DeleteMessage({ id }) {
-    const deleteMessageWithId = deleteContactMessage.bind(null, id);
+  // Bind ID ke server action
+  const deleteActionWithId = async () => {
+    const result = await deleteContactMessage(id);
+    if (result?.message.includes("berhasil")) {
+        toast.success(result.message);
+    } else if (result?.message) {
+        toast.error(result.message);
+    }
+  };
 
-    return (
-        <form action={deleteMessageWithId}>
-            <button className="rounded-md border p-2 hover:bg-gray-100">
-                <span className="sr-only">Delete</span>
-                <TrashIcon className="w-5" />
-            </button>
-        </form>
-    );
+  return (
+    <form action={deleteActionWithId}>
+      <button 
+        className="rounded-md border p-2 hover:bg-gray-100 text-red-500 hover:text-red-700 transition-colors"
+        aria-label="Hapus pesan"
+      >
+        <span className="sr-only">Delete</span>
+        <TrashIcon className="w-5" />
+      </button>
+    </form>
+  );
 }

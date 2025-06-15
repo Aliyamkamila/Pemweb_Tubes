@@ -1,113 +1,97 @@
-// Lokasi: app/(publicpages)/contact/page.js
-"use client";
+"use server";
 
-import { useFormState } from "react-dom";
-import { createContactMessage } from "@/app/lib/actions/contact";
-import { Button } from "@/app/ui/button";
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { z } from "zod";
+import prisma from "@/app/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
-export default function ContactPage() {
-  // Pastikan bagian ini ada:
-  const initialState = {
-    errors: {},
-    message: null,
-  };
+// ... (createContactMessage tetap sama)
+const ContactFormSchema = z.object({
+  name: z.string().min(3, { message: "Nama harus diisi, minimal 3 karakter." }),
+  email: z.string().email({ message: "Format email tidak valid." }),
+  phone: z.string().optional(),
+  message: z.string().min(10, { message: "Pesan harus diisi, minimal 10 karakter." }),
+});
 
-  // Pastikan initialState digunakan di sini:
-  const [state, formAction] = useFormState(createContactMessage, initialState);
+export async function createContactMessage(prevState, formData) {
+  const validatedFields = ContactFormSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    message: formData.get("message"),
+  });
 
-  const inputClasses = (hasError) =>
-    `block w-full rounded-md border py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-darkBrown ${
-      hasError ? "border-red-500" : "border-gray-200"
-    }`;
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Gagal mengirim pesan. Silakan periksa kembali isian Anda.",
+      success: false,
+    };
+  }
 
-  return (
-    <div className="bg-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-lg mx-auto">
-        <h2 className="text-3xl font-bold text-center text-brown-800 mb-2">
-          Hubungi Kami
-        </h2>
-        <p className="text-center text-gray-600 mb-8">
-          Punya pertanyaan atau ingin memulai proses adopsi? Kirimkan pesan kepada kami!
-        </p>
+  try {
+    const { name, email, phone, message } = validatedFields.data;
+    await prisma.contactMessage.create({
+      data: { name, email, phone, message, status: 'Belum dihubungi' },
+    });
+  } catch (error) {
+    console.error("Database Error:", error);
+    return { message: "Database Error: Gagal menyimpan pesan.", success: false, errors: {} };
+  }
 
-        <form action={formAction} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Nama
-            </label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              placeholder="Nama Lengkap Anda"
-              className={inputClasses(state.errors?.name)}
-              required
-              aria-describedby="name-error"
-            />
-            {state.errors?.name && (
-              <div id="name-error" className="flex items-center mt-2 text-sm text-red-500">
-                <ExclamationCircleIcon className="h-5 w-5 mr-1" />
-                {state.errors.name}
-              </div>
-            )}
-          </div>
+  revalidatePath("/dashboard/adoptions");
+  return { message: "Pesan Anda berhasil dikirim!", success: true, errors: {} };
+}
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              placeholder="email@anda.com"
-              className={inputClasses(state.errors?.email)}
-              required
-              aria-describedby="email-error"
-            />
-             {state.errors?.email && (
-              <div id="email-error" className="flex items-center mt-2 text-sm text-red-500">
-                <ExclamationCircleIcon className="h-5 w-5 mr-1" />
-                {state.errors.email}
-              </div>
-            )}
-          </div>
-          
-          <div>
-            <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-              Pesan
-            </label>
-            <textarea
-              name="message"
-              id="message"
-              rows={4}
-              placeholder="Tuliskan pesan Anda di sini..."
-              className={inputClasses(state.errors?.message)}
-              required
-              aria-describedby="message-error"
-            ></textarea>
-             {state.errors?.message && (
-              <div id="message-error" className="flex items-center mt-2 text-sm text-red-500">
-                <ExclamationCircleIcon className="h-5 w-5 mr-1" />
-                {state.errors.message}
-              </div>
-            )}
-          </div>
-          
-          <div>
-            <Button type="submit" className="w-full">Kirim Pesan</Button>
-          </div>
-          
-          <div aria-live="polite" aria-atomic="true">
-            {state.message && (
-                <p className={`mt-2 text-sm ${state.errors ? 'text-red-500' : 'text-green-500'}`}>
-                    {state.message}
-                </p>
-            )}
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+
+/**
+ * =======================================
+ * SKEMA VALIDASI & AKSI UNTUK UBAH STATUS (DISEDERHANAKAN)
+ * =======================================
+ */
+const UpdateStatusSchema = z.object({
+  id: z.string(),
+  // DIUBAH: Status "Selesai" dihapus
+  status: z.enum(["Belum dihubungi", "Sudah dihubungi"], {
+    invalid_type_error: "Pilih status yang valid.",
+  }),
+});
+
+export async function updateContactMessageStatus(id, formData) {
+  try {
+    const validatedData = UpdateStatusSchema.parse({
+      id: id,
+      status: formData.get("status"),
+    });
+
+    await prisma.contactMessage.update({
+      where: { id: validatedData.id },
+      data: { status: validatedData.status },
+    });
+
+  } catch (error) {
+    console.error("Database Error:", error);
+    return { message: "Database Error: Gagal memperbarui status pesan." };
+  }
+
+  revalidatePath("/dashboard/adoptions");
+  redirect("/dashboard/adoptions");
+}
+
+/**
+ * =======================================
+ * AKSI UNTUK HAPUS PESAN
+ * =======================================
+ */
+export async function deleteContactMessage(id) {
+  try {
+    await prisma.contactMessage.delete({
+      where: { id: id },
+    });
+    revalidatePath("/dashboard/adoptions");
+    return { message: "Pesan berhasil dihapus." };
+  } catch (error) {
+    console.error("Database Error:", error);
+    return { message: "Database Error: Gagal menghapus pesan." };
+  }
 }
