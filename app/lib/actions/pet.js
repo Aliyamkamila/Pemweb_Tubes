@@ -31,6 +31,25 @@ const PetFormSchema = z.object({
 const CreatePet = PetFormSchema.omit({ id: true });
 const UpdatePet = PetFormSchema.omit({ id: true });
 
+async function uploadImages(files) {
+  const petImageUrls = [];
+  if (files && files.length > 0 && files[0].size > 0) {
+    const uploadDir = path.join(process.cwd(), "public/uploads");
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    for (const file of files) {
+      if (file instanceof File && file.size > 0) {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const filename = `${Date.now()}-${file.name.replace(/\s/g, "_")}`;
+        const filepath = path.join(uploadDir, filename);
+        await fs.writeFile(filepath, buffer);
+        petImageUrls.push({ url: `/uploads/${filename}` });
+      }
+    }
+  }
+  return petImageUrls;
+}
+
 export async function createPet(prevState, formData) {
   // 1. Validasi field
   const validatedFields = CreatePet.safeParse({
@@ -61,20 +80,12 @@ export async function createPet(prevState, formData) {
   // 3. Proses unggah gambar
   const files = formData.getAll("images");
   let petImageUrls = [];
-  if (files && files.length > 0 && files[0].size > 0) {
-    const uploadDir = path.join(process.cwd(), "public/uploads");
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    for (const file of files) {
-      if (file instanceof File && file.size > 0) {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const filename = `${Date.now()}-${file.name.replace(/\s/g, "_")}`;
-        const filepath = path.join(uploadDir, filename);
-        await fs.writeFile(filepath, buffer);
-        petImageUrls.push({ url: `/uploads/${filename}` });
-      }
-    }
+  try {
+    petImageUrls = await uploadImages(files);
+  } catch (error) {
+    return { message: "Gagal mengunggah gambar." };
   }
+
 
   // 4. Simpan ke database
   try {
@@ -83,7 +94,7 @@ export async function createPet(prevState, formData) {
         ...otherPetData,
         species: { connect: { id: species_id } },
         adoptionStatus: { connect: { id: adoption_status_id } },
-        images: {
+        petImages: {
           create: petImageUrls,
         },
       },
@@ -123,44 +134,31 @@ export async function updatePet(id, prevState, formData) {
   
   // 2. Siapkan data untuk database
   const { species_id, adoption_status_id, ...otherPetData } = validatedFields.data;
-
+  
   try {
-    // 3. Update data teks hewan
+    // 3. Proses unggah gambar baru jika ada
+    const files = formData.getAll("petImages");
+    let newImageUrls = [];
+    if (files && files.length > 0 && files[0].size > 0) {
+        // Hapus gambar lama terlebih dahulu
+        await prisma.petImage.deleteMany({ where: { petId: id } });
+        newImageUrls = await uploadImages(files);
+    }
+
+    // 4. Update data hewan
     await prisma.pet.update({
       where: { id: id },
       data: {
         ...otherPetData,
         species: { connect: { id: species_id } },
         adoptionStatus: { connect: { id: adoption_status_id } },
+        ...(newImageUrls.length > 0 && {
+            petImages: {
+                create: newImageUrls,
+            },
+        }),
       },
     });
-
-    // 4. Proses unggah gambar baru
-    const files = formData.getAll("petImages");
-    if (files && files.length > 0 && files[0].size > 0) {
-      const uploadDir = path.join(process.cwd(), "public/uploads");
-      await fs.mkdir(uploadDir, { recursive: true });
-
-      const imagePromises = files.map(async (file) => {
-        if (file instanceof File && file.size > 0) {
-          const buffer = Buffer.from(await file.arrayBuffer());
-          const filename = `${Date.now()}-${file.name.replace(/\s/g, "_")}`;
-          const filepath = path.join(uploadDir, filename);
-          await fs.writeFile(filepath, buffer);
-
-          // Simpan URL gambar baru ke database
-          return prisma.petImage.create({
-            data: {
-              url: `/uploads/${filename}`,
-              petId: id,
-            },
-          });
-        }
-        return null;
-      });
-
-      await Promise.all(imagePromises);
-    }
 
   } catch (error) {
      console.error("ERROR SAAT UPDATE PET:", error);
@@ -175,7 +173,13 @@ export async function updatePet(id, prevState, formData) {
 
 export async function deletePet(id) {
   try {
-    // Hapus gambar terkait terlebih dahulu
+    // Hapus gambar terkait terlebih dahulu dari file system jika diperlukan
+    const petImages = await prisma.petImage.findMany({ where: { petId: id } });
+    for (const image of petImages) {
+        const imagePath = path.join(process.cwd(), "public", image.url);
+        await fs.unlink(imagePath).catch(err => console.error(`Gagal hapus file: ${imagePath}`, err));
+    }
+    // Hapus relasi gambar dari database
     await prisma.petImage.deleteMany({
       where: { petId: id },
     });

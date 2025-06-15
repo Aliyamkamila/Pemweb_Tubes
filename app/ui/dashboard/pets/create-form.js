@@ -10,7 +10,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 
 // Komponen kecil untuk setiap field input agar lebih rapi
-function FormField({ label, id, children }) {
+function FormField({ label, id, children, error }) {
   return (
     <div>
       <label
@@ -20,6 +20,7 @@ function FormField({ label, id, children }) {
         {label}
       </label>
       <div className="mt-2">{children}</div>
+      {error && <p className="mt-2 text-sm text-red-500">{error[0]}</p>}
     </div>
   );
 }
@@ -58,11 +59,10 @@ export default function CreatePetForm({ speciesList, adoptionStatusList }) {
   };
 
   return (
-    // Panggil 'dispatch' langsung di 'action' dan hapus 'onSubmit'
+    // Panggil 'dispatch' langsung di 'action'
     <form action={dispatch} className="space-y-10 divide-y divide-darkBrown/10">
-      {/* ... bagian formulir lainnya (TIDAK ADA PERUBAHAN DI SINI) ... */}
       
-      {/* --- Bagian Informasi Dasar (Sama seperti sebelumnya) --- */}
+      {/* --- Bagian Informasi Dasar --- */}
       <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 md:grid-cols-3">
         <div className="px-4 sm:px-0">
           <h2 className="text-base font-semibold leading-7 text-darkBrown">Informasi Dasar</h2>
@@ -72,32 +72,30 @@ export default function CreatePetForm({ speciesList, adoptionStatusList }) {
           <div className="px-4 py-6 sm:p-8">
             <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
               <div className="sm:col-span-4">
-                <FormField label="Nama" id="name">
+                <FormField label="Nama" id="name" error={state.errors?.name}>
                   <input type="text" name="name" id="name" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" />
                 </FormField>
-                {state.errors?.name && <p className="mt-2 text-sm text-red-500">{state.errors.name[0]}</p>}
               </div>
               <div className="sm:col-span-2">
-                <FormField label="Jenis Kelamin" id="gender">
+                <FormField label="Jenis Kelamin" id="gender" error={state.errors?.gender}>
                   <select id="gender" name="gender" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm">
-                    <option value="Jantan">Jantan</option>
-                    <option value="Betina">Betina</option>
+                    <option value="Male">Jantan</option>
+                    <option value="Female">Betina</option>
                   </select>
                 </FormField>
               </div>
               <div className="sm:col-span-full">
-                <FormField label="Deskripsi" id="description">
+                <FormField label="Deskripsi" id="description" error={state.errors?.description}>
                   <textarea id="description" name="description" rows={3} className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" />
                 </FormField>
                 <p className="mt-2 text-xs leading-5 text-gray-500">Tulis beberapa kalimat tentang hewan ini.</p>
-                {state.errors?.description && <p className="mt-2 text-sm text-red-500">{state.errors.description[0]}</p>}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* --- Bagian Detail Fisik & Jenis (Sama seperti sebelumnya) --- */}
+      {/* --- Bagian Detail Fisik & Jenis --- */}
       <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 md:grid-cols-3">
          <div className="px-4 sm:px-0">
           <h2 className="text-base font-semibold leading-7 text-darkBrown">Detail Fisik & Jenis</h2>
@@ -106,17 +104,17 @@ export default function CreatePetForm({ speciesList, adoptionStatusList }) {
         <div className="bg-white shadow-sm ring-1 ring-darkBrown/5 sm:rounded-xl md:col-span-2">
           <div className="px-4 py-6 sm:p-8">
             <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <div className="sm:col-span-2"><FormField label="Umur (Tahun)" id="age"><input type="number" name="age" id="age" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
-              <div className="sm:col-span-2"><FormField label="Berat (kg)" id="weight"><input type="number" name="weight" id="weight" step="0.1" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
-              <div className="sm:col-span-2"><FormField label="Tinggi (cm)" id="height"><input type="number" name="height" id="height" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
-              <div className="sm:col-span-3"><FormField label="Spesies" id="species_id"><select id="species_id" name="species_id" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm">{speciesList.map((s) => ( <option key={s.id} value={s.id}>{s.name}</option>))}</select></FormField></div>
-              <div className="sm:col-span-3"><FormField label="Ras" id="breed"><input type="text" name="breed" id="breed" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
+              <div className="sm:col-span-2"><FormField label="Umur (Tahun)" id="age" error={state.errors?.age}><input type="number" name="age" id="age" step="0.1" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
+              <div className="sm:col-span-2"><FormField label="Berat (kg)" id="weight" error={state.errors?.weight}><input type="number" name="weight" id="weight" step="0.1" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
+              <div className="sm:col-span-2"><FormField label="Tinggi (cm)" id="height" error={state.errors?.height}><input type="number" name="height" id="height" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
+              <div className="sm:col-span-3"><FormField label="Spesies" id="species_id" error={state.errors?.species_id}><select id="species_id" name="species_id" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm">{speciesList.map((s) => ( <option key={s.id} value={s.id}>{s.name}</option>))}</select></FormField></div>
+              <div className="sm:col-span-3"><FormField label="Ras" id="breed" error={state.errors?.breed}><input type="text" name="breed" id="breed" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* --- Bagian Lokasi & Status (Sama seperti sebelumnya) --- */}
+      {/* --- Bagian Lokasi & Status --- */}
       <div className="grid grid-cols-1 gap-x-8 gap-y-8 pt-10 md:grid-cols-3">
         <div className="px-4 sm:px-0">
           <h2 className="text-base font-semibold leading-7 text-darkBrown">Lokasi & Status</h2>
@@ -125,10 +123,10 @@ export default function CreatePetForm({ speciesList, adoptionStatusList }) {
         <div className="bg-white shadow-sm ring-1 ring-darkBrown/5 sm:rounded-xl md:col-span-2">
           <div className="px-4 py-6 sm:p-8">
             <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <div className="sm:col-span-3"><FormField label="Kota" id="city"><input type="text" name="city" id="city" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
-              <div className="sm:col-span-3"><FormField label="Provinsi" id="state"><input type="text" name="state" id="state" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
-              <div className="sm:col-span-3"><FormField label="Publikasi" id="published"><select id="published" name="published" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"><option value="true">Ya, Publikasikan</option><option value="false">Tidak, Simpan sebagai Draf</option></select></FormField></div>
-              <div className="sm:col-span-3"><FormField label="Status Adopsi" id="adoption_status_id"><select id="adoption_status_id" name="adoption_status_id" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm">{adoptionStatusList.map((status) => ( <option key={status.id} value={status.id}>{status.name}</option>))}</select></FormField></div>
+              <div className="sm:col-span-3"><FormField label="Kota" id="city" error={state.errors?.city}><input type="text" name="city" id="city" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
+              <div className="sm:col-span-3"><FormField label="Provinsi" id="state" error={state.errors?.state}><input type="text" name="state" id="state" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" /></FormField></div>
+              <div className="sm:col-span-3"><FormField label="Publikasi" id="published" error={state.errors?.published}><select id="published" name="published" defaultValue="true" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"><option value="true">Ya, Publikasikan</option><option value="false">Tidak, Simpan sebagai Draf</option></select></FormField></div>
+              <div className="sm:col-span-3"><FormField label="Status Adopsi" id="adoption_status_id" error={state.errors?.adoption_status_id}><select id="adoption_status_id" name="adoption_status_id" className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm">{adoptionStatusList.map((status) => ( <option key={status.id} value={status.id}>{status.name}</option>))}</select></FormField></div>
             </div>
           </div>
         </div>
@@ -150,7 +148,7 @@ export default function CreatePetForm({ speciesList, adoptionStatusList }) {
                   <div className="mt-4 flex text-sm leading-6 text-gray-600">
                     <label htmlFor="images" className="relative cursor-pointer rounded-md bg-white font-semibold text-blue-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-2 hover:text-blue-500">
                       <span>Pilih foto</span>
-                      {/* Ganti nama 'file-upload' menjadi 'images' agar sesuai dengan action */}
+                      {/* Pastikan nama input adalah 'images' */}
                       <input id="images" name="images" type="file" multiple className="sr-only" onChange={handleFileChange} accept="image/*" ref={fileInputRef} />
                     </label>
                     <p className="pl-1">atau seret dan lepas</p>
