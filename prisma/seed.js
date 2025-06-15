@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 async function main() {
   try {
     console.log("Menghapus data lama...");
-    // Urutan penghapusan penting untuk menghindari error relasi
     await prisma.petImage.deleteMany();
     await prisma.adoption.deleteMany();
     await prisma.like.deleteMany();
@@ -105,7 +104,7 @@ async function main() {
         petImages: { create: [{ url: "/uploads/bird1.webp" }, { url: "/uploads/bird1-1.webp" }] },
       },
       {
-        name: "Tweety", age: 2, gender: "Female", breed: "Kenari", weight: 0.02, height: 8, city: "Bogor", state: "Jawa Barat", description: "Kecil, lincah, dan berwarna kuning cerah.", published: true,
+        name: "Tweety", age: 2, gender: "Female", breed: "Kenari", weight: 0.02, height: 8, city: "Cirebon", state: "Jawa Barat", description: "Kecil, lincah, dan berwarna kuning cerah.", published: true,
         species: { connect: { id: "a4b1c2d3-e4f5-4a6b-8c7d-8e9f0a1b2c3d" } },
         adoptionStatus: { connect: { id: "640566d8-2619-4764-8660-61a39baf075e" } }, // Available
         petImages: { create: [{ url: "/uploads/bird2.webp" }, { url: "/uploads/bird2-2.webp" }] },
