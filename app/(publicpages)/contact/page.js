@@ -147,7 +147,7 @@ export default function ContactPage() {
             </div>
             
             <div className="pt-4 flex justify-end">
-              <Button type="submit" className="bg-warmPeach text-darkBrown hover:bg-opacity-90">
+              <Button type="submit"   className="rounded-xl bg-darkBrown px-4 py-2 text-sm font-semibold text-beige shadow-sm transition-colors hover:bg-warmPeach hover:text-darkBrown focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-darkBrown">
                 Kirim Pesan
               </Button>
             </div>
