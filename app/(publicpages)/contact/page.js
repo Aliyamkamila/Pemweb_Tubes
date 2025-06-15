@@ -1,135 +1,119 @@
-// app/ui/publicpages/contact-form.js
+// Lokasi: app/(publicpages)/contact/page.js
 "use client";
 
 import { useFormState } from "react-dom";
-import { useEffect, useRef } from "react";
 import { createContactMessage } from "@/app/lib/actions/contact";
 import { Button } from "@/app/ui/button";
-import { toast } from "sonner";
-import clsx from "clsx"; // clsx diaktifkan kembali
 
-export default function ContactForm() {
+// Mengganti nama komponen agar lebih sesuai dengan nama file (praktik yang baik)
+export default function ContactPage() {
   const initialState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(createContactMessage, initialState);
-  const formRef = useRef(null);
+  
+  // 'formAction' adalah fungsi yang seharusnya dieksekusi oleh form
+  const [state, formAction] = useFormState(createContactMessage, initialState);
 
-  useEffect(() => {
-    if (state.message?.includes("successfully")) {
-      toast.success("✅ Pesan terkirim!", {
-        description: "Kami akan segera menghubungi Anda kembali.",
-        duration: 5000,
-      });
-      formRef.current?.reset();
-    } else if (state.message) {
-      toast.error("❌ Gagal mengirim pesan!", {
-        description: state.message,
-        duration: 6000,
-      });
-    }
-  }, [state]);
-
-  const inputClasses = (hasError) => clsx(
-    "block w-full rounded-md border-0 px-4 py-2.5 text-darkBrown shadow-sm ring-1 ring-inset",
-    "placeholder:text-lightBrown focus:ring-2 focus:ring-inset focus:ring-darkBrown text-base",
-    "transition-all duration-200 ease-in-out",
-    {
-      "ring-red-500 focus:ring-red-500": hasError, // Border merah jika ada error
-      "ring-warmPeach hover:ring-darkBrown": !hasError, // Normal state with hover
-    }
-  );
+  // Fungsi sederhana untuk styling, menggantikan clsx sementara
+  const inputClasses = (hasError) =>
+    `block w-full rounded-md border py-2 px-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-darkBrown ${
+      hasError ? "border-red-500 ring-red-500" : "border-gray-300"
+    }`;
 
   return (
-    <div className="rounded-xl bg-creamLight px-8 py-12 md:px-12 shadow-xl border border-darkBrown/20">
-      <form action={dispatch} ref={formRef}>
-        <div className="grid grid-cols-1 gap-y-7">
+    <div className="bg-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-lg mx-auto rounded-xl bg-gray-50 p-8 shadow-lg">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+          Hubungi Kami
+        </h2>
+
+        {/* Pastikan 'action' di sini menggunakan 'formAction' dari useFormState */}
+        <form action={formAction} className="space-y-5">
           {/* Input Nama */}
           <div>
-            <label htmlFor="name" className="sr-only">Nama</label>
+            <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">Nama Lengkap</label>
             <input
               type="text"
               name="name"
               id="name"
-              placeholder="Nama Lengkap Anda"
+              placeholder="Nama Anda"
               className={inputClasses(state.errors?.name)}
               required
-              aria-invalid={state.errors?.name ? "true" : "false"}
-              aria-describedby={state.errors?.name ? "name-error" : undefined}
             />
             {state.errors?.name && (
-              <p id="name-error" className="mt-2 text-sm text-red-600 font-medium" aria-live="polite">
-                {state.errors.name.join(', ')}
+              <p className="mt-2 text-sm text-red-600">
+                {state.errors.name}
               </p>
             )}
           </div>
 
           {/* Input Email */}
           <div>
-            <label htmlFor="email" className="sr-only">Email</label>
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
               name="email"
               id="email"
-              placeholder="Email Aktif Anda"
+              placeholder="Email aktif Anda"
               className={inputClasses(state.errors?.email)}
               required
-              aria-invalid={state.errors?.email ? "true" : "false"}
-              aria-describedby={state.errors?.email ? "email-error" : undefined}
             />
             {state.errors?.email && (
-              <p id="email-error" className="mt-2 text-sm text-red-600 font-medium" aria-live="polite">
-                {state.errors.email.join(', ')}
+              <p className="mt-2 text-sm text-red-600">
+                {state.errors.email}
               </p>
             )}
           </div>
 
           {/* Input Nomor Telepon */}
           <div>
-            <label htmlFor="phone" className="sr-only">No. Telepon</label>
+            <label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700">No. Telepon (Opsional)</label>
             <input
               type="tel"
               name="phone"
               id="phone"
-              placeholder="Nomor Telepon (Opsional, cth: 08123...)"
+              placeholder="cth: 08123..."
               className={inputClasses(state.errors?.phone)}
-              aria-invalid={state.errors?.phone ? "true" : "false"}
-              aria-describedby={state.errors?.phone ? "phone-error" : undefined}
             />
             {state.errors?.phone && (
-              <p id="phone-error" className="mt-2 text-sm text-red-600 font-medium" aria-live="polite">
-                {state.errors.phone.join(', ')}
+              <p className="mt-2 text-sm text-red-600">
+                {state.errors.phone}
               </p>
             )}
           </div>
 
           {/* Textarea Pesan */}
           <div>
-            <label htmlFor="message" className="sr-only">Pesan</label>
+            <label htmlFor="message" className="mb-1 block text-sm font-medium text-gray-700">Pesan</label>
             <textarea
               name="message"
               id="message"
-              rows={5}
-              placeholder="Tulis pesan Anda di sini. Kami akan menghubungi Anda kembali secepatnya!"
+              rows={4}
+              placeholder="Tulis pesan Anda di sini..."
               className={inputClasses(state.errors?.message)}
               required
-              aria-invalid={state.errors?.message ? "true" : "false"}
-              aria-describedby={state.errors?.message ? "message-error" : undefined}
             ></textarea>
             {state.errors?.message && (
-              <p id="message-error" className="mt-2 text-sm text-red-600 font-medium" aria-live="polite">
-                {state.errors.message.join(', ')}
+              <p className="mt-2 text-sm text-red-600">
+                {state.errors.message}
               </p>
             )}
           </div>
-        </div>
-        <div className="mt-10 flex justify-end">
-          <Button
-            type="submit"
-            className="bg-darkBrown hover:bg-lightBrown text-white font-semibold py-3 px-8 rounded-lg shadow-md transition-colors duration-200"
-          >
-            Kirim Pesan
-          </Button>
-        </div>
-      </form>
+          
+          <div className="pt-4 flex justify-end">
+            <Button type="submit">
+              Kirim Pesan
+            </Button>
+          </div>
+
+           {/* Menampilkan pesan sukses atau gagal dari server */}
+           {state.message && (
+            <div className="mt-4 text-center">
+              <p className={`text-sm ${state.errors ? 'text-red-600' : 'text-green-600'}`}>
+                {state.message}
+              </p>
+            </div>
+           )}
+        </form>
+      </div>
     </div>
   );
 }

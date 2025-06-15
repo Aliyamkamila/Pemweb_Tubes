@@ -1,4 +1,4 @@
-// File: app/ui/dashboard/adoptions/edit-form.js
+// Lokasi: app/ui/dashboard/adoptions/edit-form.js
 "use client"
 
 import { useActionState } from 'react';
@@ -9,9 +9,11 @@ import {
     PhoneIcon,
     ChatBubbleLeftRightIcon,
   } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 
 export default function EditContactForm({ message }) {
     const initialState = { message: null, errors: {} };
+    // Bind ID ke server action
     const updateMessageWithId = updateContactMessage.bind(null, message.id);
     const [state, formAction] = useActionState(updateMessageWithId, initialState);
 
@@ -27,6 +29,7 @@ export default function EditContactForm({ message }) {
                             name="name"
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                             defaultValue={message.name}
+                            required
                         />
                         <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                     </div>
@@ -42,6 +45,7 @@ export default function EditContactForm({ message }) {
                             type="email"
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                             defaultValue={message.email}
+                            required
                         />
                         <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                     </div>
@@ -49,14 +53,14 @@ export default function EditContactForm({ message }) {
 
                 {/* Nomor Telepon */}
                 <div className="mb-4">
-                    <label htmlFor="phone" className="mb-2 block text-sm font-medium">No. Telepon</label>
+                    <label htmlFor="phone" className="mb-2 block text-sm font-medium">No. Telepon (Opsional)</label>
                     <div className="relative">
                         <input
                             id="phone"
                             name="phone"
                             type="tel"
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                            defaultValue={message.phone}
+                            defaultValue={message.phone || ''}
                         />
                         <PhoneIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
                     </div>
@@ -72,23 +76,24 @@ export default function EditContactForm({ message }) {
                             rows={4}
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                             defaultValue={message.message}
+                            required
                         />
                         <ChatBubbleLeftRightIcon className="pointer-events-none absolute left-3 top-3.5 h-[18px] w-[18px] text-gray-500" />
                     </div>
                 </div>
 
-                 {/* Menampilkan error jika ada */}
+                 {/* Menampilkan pesan error jika ada */}
                 <div aria-live="polite" aria-atomic="true">
                     {state.message ? (<p className="mt-2 text-sm text-red-500">{state.message}</p>) : null}
                 </div>
             </div>
             <div className="mt-6 flex justify-end gap-4">
-                <a
+                <Link
                     href="/dashboard/adoptions"
                     className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
                 >
                     Batal
-                </a>
+                </Link>
                 <button type="submit" className="flex h-10 items-center rounded-lg bg-darkBrown px-4 text-sm font-medium text-white transition-colors hover:bg-opacity-90">Simpan Perubahan</button>
             </div>
         </form>

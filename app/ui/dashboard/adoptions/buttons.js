@@ -1,12 +1,14 @@
+// Lokasi: app/ui/dashboard/adoptions/buttons.js
+
 "use client";
 import { useState, useEffect } from "react";
 import { useFormState } from "react-dom";
 import { PencilIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+// Impor aksi yang benar
 import { updateContactStatus, deleteContactMessage } from "@/app/lib/actions/contact";
 
-
-// Tombol untuk mengarahkan ke halaman edit
+// ... (EditMessage tetap sama)
 export function EditMessage({ id }) {
     return (
         <Link
@@ -21,8 +23,8 @@ export function EditMessage({ id }) {
 // Komponen untuk mengubah status
 export function UpdateStatus({ message }) {
   const initialState = { message: null };
-  // UBAH BARIS INI: Gunakan useFormState
-  const [state, formAction] = useFormState(updateContactStatus, initialState); // <--- Ini sudah benar: useFormState
+  // Gunakan useFormState dengan aksi yang benar
+  const [state, formAction] = useFormState(updateContactStatus, initialState);
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export function UpdateStatus({ message }) {
   );
 }
 
-// Komponen untuk menghapus pesan
+// ... (DeleteMessage tetap sama)
 export function DeleteMessage({ id }) {
     const deleteMessageWithId = deleteContactMessage.bind(null, id);
 
