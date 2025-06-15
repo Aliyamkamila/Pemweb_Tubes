@@ -52,10 +52,13 @@ async function main() {
 
   // --- Seeding Adoption Status ---
   console.log("Menambahkan data status adopsi...");
-  const adoptionStatuses = [
-    { id: "640566d8-2619-4764-8660-61a39baf075e", name: "Available" },
-    { id: "2609d1ce-f62b-42e3-a649-0129ace0152b", name: "Adopted" },
-  ];
+// prisma/seed.js
+const adoptionStatuses = [
+  { id: "640566d8-2619-4764-8660-61a39baf075e", name: "Available" },
+  { id: "2609d1ce-f62b-42e3-a649-0129ace0152b", name: "Adopted" },
+  // TAMBAHKAN BARIS INI:
+  { id: "09fe1188-741e-4a97-a9ad-0cfd094ee247", name: "Pending" },
+];
   for (const as of adoptionStatuses) {
     await prisma.adoptionStatus.create({ data: as });
   }
