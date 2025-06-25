@@ -1,14 +1,15 @@
+// app/ui/dashboard/adoptions/edit-form.js
 "use client";
 
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
-import { updateContactMessageStatus } from "@/app/lib/actions/contact"; 
+import { updateContactMessageStatus } from "@/app/lib/actions/contact"; // PERBAIKAN: Mengganti import
 import { useState } from "react";
 import Link from "next/link";
 
-// Main form component
-export default function EditAdoptionForm({ message }) { 
+// Komponen utama formulir
+export default function EditAdoptionForm({ message }) { // PERBAIKAN: Mengganti 'adoption' menjadi 'message'
   const [errors, setErrors] = useState({});
-  const [feedbackMessage, setFeedbackMessage] = useState(''); 
+  const [feedbackMessage, setFeedbackMessage] = useState(''); // PERBAIKAN: Mengganti nama 'message' menjadi 'feedbackMessage'
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
@@ -17,11 +18,11 @@ export default function EditAdoptionForm({ message }) {
 
     setIsSubmitting(true);
     setErrors({});
-    setFeedbackMessage(''); 
+    setFeedbackMessage(''); // Bersihkan pesan sebelumnya
     
     const formData = new FormData(event.currentTarget);
     
-    // Call the correct server action with the message ID
+    // PERBAIKAN: Panggil server action yang benar dan gunakan message.id
     const result = await updateContactMessageStatus(message.id, formData); 
 
     setIsSubmitting(false);
@@ -32,7 +33,7 @@ export default function EditAdoptionForm({ message }) {
     } else if (result && result.message) {
         setFeedbackMessage(result.message);
     }
-    // Redirection will be handled by the server action on success
+    // Redirect akan ditangani oleh server action jika berhasil
   };
 
   return (
@@ -42,11 +43,11 @@ export default function EditAdoptionForm({ message }) {
                 <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                     <div className="sm:col-span-3">
                         <label className="block text-sm font-medium leading-6 text-darkBrown">Nama Pengirim</label>
-                        <p className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 px-3 bg-gray-100">{message.name}</p> 
+                        <p className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 px-3 bg-gray-100">{message.name}</p> {/* PERBAIKAN: Menggunakan message.name */}
                     </div>
                     <div className="sm:col-span-3">
                         <label className="block text-sm font-medium leading-6 text-darkBrown">Email Pengirim</label>
-                        <p className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 px-3 bg-gray-100">{message.email}</p> 
+                        <p className="mt-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 px-3 bg-gray-100">{message.email}</p> {/* PERBAIKAN: Menggunakan message.email */}
                     </div>
                     <div className="sm:col-span-4">
                         <label htmlFor="status" className="block text-sm font-medium leading-6 text-darkBrown">
@@ -57,7 +58,7 @@ export default function EditAdoptionForm({ message }) {
                                 id="status"
                                 name="status"
                                 className="block w-full rounded-md border-0 py-1.5 text-darkBrown shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                                defaultValue={message.status} // Fix: Removed extra curly brace if any, ensuring clean JSX
+                                defaultValue={message.status} // PERBAIKAN: Menggunakan message.status
                             >
                                 <option value="Belum dihubungi">Belum dihubungi</option>
                                 <option value="Sudah dihubungi">Sudah dihubungi</option>

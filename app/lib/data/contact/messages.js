@@ -1,18 +1,32 @@
+// app/lib/data/contact/messages.js
 import prisma from "@/app/lib/prisma";
 import { unstable_noStore as noStore } from "next/cache";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 10; // PERBAIKAN: Nama variabel yang benar
 
 // Mengambil pesan dengan filter dan paginasi untuk tabel dashboard
-export async function fetchFilteredContactMessages(query, currentPage) {
+export async function fetchFilteredContactMessages(rawQuery, rawCurrentPage) { // Mengubah nama parameter untuk kejelasan
   noStore();
-  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  // PERBAIKAN: Memastikan 'query' selalu berupa string. Jika 'rawQuery' undefined/null, akan jadi string kosong.
+  const query = typeof rawQuery === 'string' ? rawQuery : '';
+
+  // PERBAIKAN: Memastikan 'currentPage' selalu berupa angka yang valid. Jika 'rawCurrentPage' undefined/null/NaN, akan jadi 1.
+  const currentPage = (typeof rawCurrentPage === 'number' && !isNaN(rawCurrentPage)) ? rawCurrentPage : 1;
+  
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE; 
+
+  // --- DEBUGGING LOGS (Bisa dihapus setelah masalah teratasi) ---
+  console.log('DEBUG: query yang diterima di messages.js:', query);
+  console.log('DEBUG: currentPage yang diterima di messages.js:', currentPage);
+  console.log('DEBUG: offset yang dihitung di messages.js:', offset);
+  // --- AKHIR DEBUGGING LOGS ---
 
   try {
     const messages = await prisma.contactMessage.findMany({
       where: {
         OR: [
-          { name: { contains: query, mode: 'insensitive' } },
+          { name: { contains: query, mode: 'insensitive' } }, // Menggunakan 'query' yang sudah dipastikan string
           { email: { contains: query, mode: 'insensitive' } },
           { message: { contains: query, mode: 'insensitive' } },
         ],
@@ -21,16 +35,16 @@ export async function fetchFilteredContactMessages(query, currentPage) {
         createdAt: 'desc',
       },
       take: ITEMS_PER_PAGE,
-      skip: offset,
+      skip: offset, // Menggunakan 'offset' yang sudah dipastikan angka
     });
-    // Ensure all messages are serializable
+    // Memastikan semua pesan dapat diserialisasi dengan mengkonversi objek Date
     return messages.map(message => ({
       ...message,
       createdAt: message.createdAt ? message.createdAt.toISOString() : null,
-      updatedAt: message.updatedAt ? message.updatedAt.toISOString() : null, // Assuming updatedAt might exist
+      updatedAt: message.updatedAt ? message.updatedAt.toISOString() : null, // Asumsi updatedAt mungkin ada di skema Anda
     }));
   } catch (error) {
-    console.error('Database Error:', error);
+    console.error('Database Error:', error); // Di sinilah error Prisma dicatat
     throw new Error('Gagal mengambil data pesan.');
   }
 }
@@ -64,15 +78,15 @@ export async function fetchContactMessageById(id) {
             where: { id: id },
         });
 
-        // Explicitly convert Date objects to ISO strings for serialization
+        // Memastikan objek Date dikonversi ke string ISO untuk serialisasi
         if (message) {
             if (message.createdAt) {
                 message.createdAt = message.createdAt.toISOString();
             }
-            if (message.updatedAt) { // Assuming an updatedAt field might exist
+            if (message.updatedAt) { 
                 message.updatedAt = message.updatedAt.toISOString();
             }
-            // Add other date fields if your ContactMessage schema has them
+            // Tambahkan bidang tanggal lain jika skema ContactMessage Anda memilikinya
         }
 
         return message;
